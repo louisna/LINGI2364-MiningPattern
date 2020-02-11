@@ -123,3 +123,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# DS_Store
+.DS_Store
+
+# Zip
+Project1-Apriori/Datasets/*.txt
+Project1-Apriori/Datasets/*.dat
+*.xml
+*.iml
