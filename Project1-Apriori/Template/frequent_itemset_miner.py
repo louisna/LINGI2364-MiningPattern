@@ -18,9 +18,10 @@ any order.
 
 Do not change the signature of the apriori and alternative_miner methods as they will be called by the test script.
 
-__authors__ = "<write here your group, first name(s) and last name(s)>"
+__authors__ = GROUP 23, Edgar Gevorgyan (2018-16-00) AND Louis Navarre (1235-16-00)
 """
 
+import itertools
 
 class Dataset:
 	"""Utility class to manage a dataset stored in a external file."""
@@ -53,14 +54,70 @@ class Dataset:
 		"""Returns the transaction at index i as an int array"""
 		return self.transactions[i]
 
+def is_subset(subset, set):
+	"""
+	Determines if 'subset' is a subset of 'set'
+	:param subset: The subset
+	:param set: The set
+	:return: True if 'subset' is a subset of 'set, False otherwise
+	"""
+	cpos = 0
+	for c in set:
+		if c == subset[cpos]:
+			cpos += 1  # Found the char
+		if cpos == len(subset):
+			return True
+	return False
+
+def gen_supersets_naive(ds, level):
+	"""
+	Naive generation of the supersets, generating all permutations of size level+2
+	:param ds: The object representing the dataset
+	:param level: The level (~ size) of the sets
+	:return: A list of the supersets at the given level
+	"""
+	return list(itertools.permutations(ds.items, level + 2))
+
 
 def apriori(filepath, minFrequency):
 	"""Runs the apriori algorithm on the specified file with the given minimum frequency"""
 	# TODO: implementation of the apriori algorithm
-	print("Not implemented")
+
+	# Dataset object
+	ds = Dataset(filepath)
+
+	# Current sets working
+	working_set = [[i] for i in ds.items]
+
+	# Number of frequent sets at the previous level
+	previous_frequent = 1
+
+	for level in range(ds.items_num()):  # Check each level
+		# Monotonicity property
+		if previous_frequent == 0:
+			break
+		previous_frequent = 0
+		# Should not be useful
+		if len(working_set) == 0:  # No more frequent set
+			break
+		for subset in working_set:
+			frequency = 0
+			for i, set in enumerate(ds.transactions):
+				# If the remaining number of transactions is lower than the required frequency
+				# PROBLEM COULD COME FROM HERE MAYBE => INDEXES => I DON'T THINK SO
+				#if ds.trans_num() - i - 1 < minFrequency - frequency:
+				#	break  # Useless to continue
+				frequency += is_subset(subset, set)
+			if frequency >= minFrequency:
+				previous_frequent += 1
+				print(list(subset), "({})".format(frequency/ds.trans_num()))
+		working_set = gen_supersets_naive(ds, level)
 
 
 def alternative_miner(filepath, minFrequency):
 	"""Runs the alternative frequent itemset mining algorithm on the specified file with the given minimum frequency"""
 	# TODO: either second implementation of the apriori algorithm or implementation of the depth first search algorithm
-	print("Not implemented")
+	print("Work soon in progress")
+
+
+# apriori("../Datasets/toy.dat", 1)
