@@ -80,18 +80,18 @@ def gen_supersets_naive(ds, level):
 	return list(itertools.permutations(ds.items, level + 2))
 
 def is_prefix(s1, s2):
-	s1 = list(s1)
+	s1 = list(s1.copy())
 	s1.pop()
-	s2 = list(s2)
+	s2 = list(s2.copy())
 	s2.pop()
 	s1.sort()
 	s2.sort()
 	return s1 == s2
 
-def gen_supersets_prefix(ds, level, sets):
+def gen_supersets_prefix(sets):
 	ret = []
 	for i, s1 in enumerate(sets):
-		for j, s2 in enumerate(sets[i:]):
+		for j, s2 in enumerate(sets[i+1:]):
 			if is_prefix(s1, s2):
 				b = s1.copy()
 				b.append(s2[-1])
@@ -111,35 +111,29 @@ def apriori(filepath, minFrequency):
 	# Current sets working
 	working_set = [[i] for i in ds.items]
 
-	# Number of frequent sets at the previous level
-	previous_frequent = 1
-
+	
 	for level in range(ds.items_num()):  # Check each level
 		# Frequent set
 		frequent = []
 
 		# Monotonicity property
-		if previous_frequent == 0:
-			break
-		previous_frequent = 0
-		# Should not be useful
 		if len(working_set) == 0:  # No more frequent set
 			break
+
 		for subset in working_set:
 			support = 0
-			for i, set in enumerate(ds.transactions):
+			for i, seti in enumerate(ds.transactions):
 				# If the remaining number of transactions is lower than the required frequency
 				# PROBLEM COULD COME FROM HERE MAYBE => INDEXES => I DON'T THINK SO
-				#if ds.trans_num() - i - 1 < minFrequency - support:
-				#	break  # Useless to continue
-				support += is_subset(subset, set)
+				if ds.trans_num() - i - 1 < minFrequency * ds.trans_num() - support:
+					break  # Useless to continue
+				support += is_subset(subset, seti)
 			frequency = support / ds.trans_num()
 			if frequency >= minFrequency:
-				previous_frequent += 1
 				frequent.append(subset)
 				print(list(subset), "({})".format(frequency))
 		#working_set = gen_supersets_naive(ds, level)
-		working_set = gen_supersets_prefix(ds, level, frequent)
+		working_set = gen_supersets_prefix(frequent)
 
 
 def alternative_miner(filepath, minFrequency):
@@ -147,5 +141,6 @@ def alternative_miner(filepath, minFrequency):
 	# TODO: either second implementation of the apriori algorithm or implementation of the depth first search algorithm
 	apriori(filepath, minFrequency)
 
-
-# apriori("../Datasets/chess.dat", 0.9)
+t=time.time()
+apriori("../Datasets/accidents.dat", 0.8)
+print(time.time()-t)
