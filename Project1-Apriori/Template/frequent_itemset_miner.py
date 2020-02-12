@@ -55,7 +55,7 @@ class Dataset:
 		"""Returns the transaction at index i as an int array"""
 		return self.transactions[i]
 
-def is_subset(subset, set):
+def is_subset(subset, settt):
 	"""
 	Determines if 'subset' is a subset of 'set'
 	:param subset: The subset
@@ -63,9 +63,12 @@ def is_subset(subset, set):
 	:return: True if 'subset' is a subset of 'set, False otherwise
 	"""
 	cpos = 0
-	for c in set:
-		if c == subset[cpos]:
-			cpos += 1  # Found the char
+	for c in settt:
+		""" too slow
+		if c > subset[cpos]:
+			return False
+		"""
+		cpos += c == subset[cpos]  # Found the char
 		if cpos == len(subset):
 			return True
 	return False
@@ -80,18 +83,12 @@ def gen_supersets_naive(ds, level):
 	return list(itertools.permutations(ds.items, level + 2))
 
 def is_prefix(s1, s2):
-	s1 = list(s1.copy())
-	s1.pop()
-	s2 = list(s2.copy())
-	s2.pop()
-	s1.sort()
-	s2.sort()
-	return s1 == s2
+	return s1[:-1] == s2[:-1]
 
 def gen_supersets_prefix(sets):
 	ret = []
 	for i, s1 in enumerate(sets):
-		for j, s2 in enumerate(sets[i+1:]):
+		for s2 in sets[i+1:]:
 			if is_prefix(s1, s2):
 				b = s1.copy()
 				b.append(s2[-1])
@@ -122,11 +119,11 @@ def apriori(filepath, minFrequency):
 
 		for subset in working_set:
 			support = 0
-			for i, seti in enumerate(ds.transactions):
+			for seti in ds.transactions:
 				# If the remaining number of transactions is lower than the required frequency
 				# PROBLEM COULD COME FROM HERE MAYBE => INDEXES => I DON'T THINK SO
-				if ds.trans_num() - i - 1 < minFrequency * ds.trans_num() - support:
-					break  # Useless to continue
+				#if ds.trans_num() - i - 1 < minFrequency * ds.trans_num() - support:
+				#	break  # Useless to continue
 				support += is_subset(subset, seti)
 			frequency = support / ds.trans_num()
 			if frequency >= minFrequency:
@@ -141,6 +138,8 @@ def alternative_miner(filepath, minFrequency):
 	# TODO: either second implementation of the apriori algorithm or implementation of the depth first search algorithm
 	apriori(filepath, minFrequency)
 
+"""
 t=time.time()
-apriori("../Datasets/accidents.dat", 0.8)
+apriori("../Datasets/chess.dat", 0.9)
 print(time.time()-t)
+"""
