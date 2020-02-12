@@ -126,17 +126,18 @@ def apriori(filepath, minFrequency):
 		if len(working_set) == 0:  # No more frequent set
 			break
 		for subset in working_set:
-			frequency = 0
+			support = 0
 			for i, set in enumerate(ds.transactions):
 				# If the remaining number of transactions is lower than the required frequency
 				# PROBLEM COULD COME FROM HERE MAYBE => INDEXES => I DON'T THINK SO
-				if ds.trans_num() - i - 1 < minFrequency - frequency:
-					break  # Useless to continue
-				frequency += is_subset(subset, set)
+				#if ds.trans_num() - i - 1 < minFrequency - support:
+				#	break  # Useless to continue
+				support += is_subset(subset, set)
+			frequency = support / ds.trans_num()
 			if frequency >= minFrequency:
 				previous_frequent += 1
 				frequent.append(subset)
-				print(list(subset), "({})".format(frequency/ds.trans_num()))
+				print(list(subset), "({})".format(frequency))
 		#working_set = gen_supersets_naive(ds, level)
 		working_set = gen_supersets_prefix(ds, level, frequent)
 
@@ -147,4 +148,4 @@ def alternative_miner(filepath, minFrequency):
 	apriori(filepath, minFrequency)
 
 
-apriori("../Datasets/retail.dat", 1000)
+# apriori("../Datasets/chess.dat", 0.9)
