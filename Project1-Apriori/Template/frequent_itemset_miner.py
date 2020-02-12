@@ -22,6 +22,7 @@ __authors__ = GROUP 23, Edgar Gevorgyan (2018-16-00) AND Louis Navarre (1235-16-
 """
 
 import itertools
+import time
 
 class Dataset:
 	"""Utility class to manage a dataset stored in a external file."""
@@ -78,6 +79,27 @@ def gen_supersets_naive(ds, level):
 	"""
 	return list(itertools.permutations(ds.items, level + 2))
 
+def is_prefix(s1, s2):
+	s1 = list(s1)
+	s1.pop()
+	s2 = list(s2)
+	s2.pop()
+	s1.sort()
+	s2.sort()
+	return s1 == s2
+
+def gen_supersets_prefix(ds, level, sets):
+	ret = []
+	for i, s1 in enumerate(sets):
+		for j, s2 in enumerate(sets[i:]):
+			if is_prefix(s1, s2):
+				b = s1.copy()
+				b.append(s2[-1])
+				ret.append(b)
+			else:
+				break
+	return ret
+
 
 def apriori(filepath, minFrequency):
 	"""Runs the apriori algorithm on the specified file with the given minimum frequency"""
@@ -93,6 +115,9 @@ def apriori(filepath, minFrequency):
 	previous_frequent = 1
 
 	for level in range(ds.items_num()):  # Check each level
+		# Frequent set
+		frequent = []
+
 		# Monotonicity property
 		if previous_frequent == 0:
 			break
@@ -105,19 +130,21 @@ def apriori(filepath, minFrequency):
 			for i, set in enumerate(ds.transactions):
 				# If the remaining number of transactions is lower than the required frequency
 				# PROBLEM COULD COME FROM HERE MAYBE => INDEXES => I DON'T THINK SO
-				#if ds.trans_num() - i - 1 < minFrequency - frequency:
-				#	break  # Useless to continue
+				if ds.trans_num() - i - 1 < minFrequency - frequency:
+					break  # Useless to continue
 				frequency += is_subset(subset, set)
 			if frequency >= minFrequency:
 				previous_frequent += 1
+				frequent.append(subset)
 				print(list(subset), "({})".format(frequency/ds.trans_num()))
-		working_set = gen_supersets_naive(ds, level)
+		#working_set = gen_supersets_naive(ds, level)
+		working_set = gen_supersets_prefix(ds, level, frequent)
 
 
 def alternative_miner(filepath, minFrequency):
 	"""Runs the alternative frequent itemset mining algorithm on the specified file with the given minimum frequency"""
 	# TODO: either second implementation of the apriori algorithm or implementation of the depth first search algorithm
-	print("Work soon in progress")
+	apriori(filepath, minFrequency)
 
 
-# apriori("../Datasets/toy.dat", 1)
+apriori("../Datasets/retail.dat", 1000)
