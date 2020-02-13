@@ -79,14 +79,6 @@ def is_subset(subset, settt):
 			return True
 	return False
 
-def gen_supersets_naive(ds, level):
-	"""
-	Naive generation of the supersets, generating all permutations of size level+2
-	:param ds: The object representing the dataset
-	:param level: The level (~ size) of the sets
-	:return: A list of the supersets at the given level
-	"""
-	return list(itertools.permutations(ds.items, level + 2))
 
 def is_prefix(s1, s2):
 	return s1[:-1] == s2[:-1]
@@ -136,7 +128,6 @@ def apriori(filepath, minFrequency):
 				trans = dico[tuple(subset[:-1])]
 				for i,seti in enumerate(trans):
 					# If the remaining number of transactions is lower than the required frequency
-					# PROBLEM COULD COME FROM HERE MAYBE => INDEXES => I DON'T THINK SO
 					if len(trans) - i < minFrequency * ds.trans_num() - support:
 						#print("utilise avec economie", len(trans) - i)
 						break  # Useless to continue
@@ -151,7 +142,6 @@ def apriori(filepath, minFrequency):
 				else:
 					future_dico[tuple(subset)] = dico[tuple(subset)]
 				print(list(subset), "({})".format(frequency))
-		#working_set = gen_supersets_naive(ds, level)
 		dico = future_dico
 		working_set = gen_supersets_prefix(frequent)
 
