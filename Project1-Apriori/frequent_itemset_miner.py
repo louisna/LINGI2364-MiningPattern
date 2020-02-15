@@ -158,13 +158,22 @@ def alternative_miner(filepath, minFrequency):
 		dfs(itemset, dico, ds, minFrequency, i, data_set)
 
 def dfs(itemset, dico, ds, minFrequency, i, data_set):
-	freq = visit(itemset, dico, ds, minFrequency)
-	if freq and i+1 < len(data_set):
-		for j,e in enumerate(data_set[i+1:]):
-			a = itemset.copy()
-			a.append(e[0])
-			dfs(a, dico, ds, minFrequency, i+1+j , data_set)
+	if small_check(itemset, dico, ds, minFrequency, i, data_set):
+		freq = visit(itemset, dico, ds, minFrequency)
+		if freq and i+1 < len(data_set):
+			for j,e in enumerate(data_set[i+1:]):
+				a = itemset.copy()
+				a.append(e[0])
+				dfs(a, dico, ds, minFrequency, i+1+j , data_set)
 	return
+
+def small_check(itemset, dico, ds, minFrequency, i, data_set):
+	for e in itemset:
+		support = len(dico[tuple([e])]) 
+		frequency = support / ds.trans_num()
+		if frequency < minFrequency : 
+			return False
+	return True
 
 def visit(itemset, dico, ds, minFrequency):
 	is_frequent = False
@@ -187,7 +196,8 @@ def visit(itemset, dico, ds, minFrequency):
 	return is_frequent
 
 
-
+"""
 t=time.time()
-apriori("./Datasets/chess.dat", 0.9)
+alternative_miner("./Datasets/accidents.dat", 0.9)
 print(time.time()-t)
+"""
