@@ -148,11 +148,46 @@ def apriori(filepath, minFrequency):
 
 def alternative_miner(filepath, minFrequency):
 	"""Runs the alternative frequent itemset mining algorithm on the specified file with the given minimum frequency"""
-	# TODO: either second implementation of the apriori algorithm or implementation of the depth first search algorithm
-	apriori(filepath, minFrequency)
+	# Dataset object
+	ds = Dataset(filepath)
+	dico = ds.dico
 
-"""
+	data_set = [[i] for i in ds.items]
+
+	for i, itemset in enumerate(data_set):
+		dfs(itemset, dico, ds, minFrequency, i, data_set)
+
+def dfs(itemset, dico, ds, minFrequency, i, data_set):
+	freq = visit(itemset, dico, ds, minFrequency)
+	if freq and i+1 < len(data_set):
+		for j,e in enumerate(data_set[i+1:]):
+			a = itemset.copy()
+			a.append(e[0])
+			dfs(a, dico, ds, minFrequency, i+1+j , data_set)
+	return
+
+def visit(itemset, dico, ds, minFrequency):
+	is_frequent = False
+	freq_trans = []
+	support = 0
+	if len(itemset) == 1 :
+		support = len(dico[tuple(itemset)]) 
+	else:
+		trans = dico[tuple(itemset[:-1])]
+		for i,seti in enumerate(trans):
+			if is_subset(itemset, seti):
+				support += 1
+				freq_trans.append(seti)
+	frequency = support / ds.trans_num()
+	if frequency >= minFrequency:
+		is_frequent = True
+		if len(itemset) > 1:
+			dico[tuple(itemset)] = freq_trans
+		print(list(itemset), "({})".format(frequency))
+	return is_frequent
+
+
+
 t=time.time()
-apriori("./Datasets/accidents.dat", 0.8)
+apriori("./Datasets/chess.dat", 0.9)
 print(time.time()-t)
-"""
