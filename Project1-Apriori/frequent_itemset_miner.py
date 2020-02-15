@@ -207,11 +207,11 @@ def visit(itemset, dico, ds, minFrequency):
 	is_frequent = False
 	freq_trans = []
 	support = 0
-	if len(itemset) == 1 :
+	if len(itemset) == 1:
 		support = len(dico[tuple(itemset)]) 
 	else:
 		trans = dico[tuple(itemset[:-1])]
-		for i,seti in enumerate(trans):
+		for i, seti in enumerate(trans):
 			if is_subset(itemset, seti):
 				support += 1
 				freq_trans.append(seti)
@@ -224,8 +224,7 @@ def visit(itemset, dico, ds, minFrequency):
 	return is_frequent
 
 
-"""
+
 t=time.time()
-alternative_miner("./Datasets/accidents.dat", 0.9)
+alternative_miner("./Datasets/chess.dat", 0.9)
 print(time.time()-t)
-"""
