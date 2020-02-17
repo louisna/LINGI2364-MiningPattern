@@ -169,7 +169,7 @@ def dfs(itemset, dico, ds, minFrequency, i, working_set):
 	:param working_set: the working set
 	:return: void method
 	"""
-	if is_frequent_itemset(itemset, dico, ds, minFrequency):
+	if is_frequent_individual(itemset, dico, ds, minFrequency):
 		freq = visit(itemset, dico, ds, minFrequency)
 		if freq and i+1 < len(working_set):
 			for j, e in enumerate(working_set[i+1:]):
@@ -178,7 +178,7 @@ def dfs(itemset, dico, ds, minFrequency, i, working_set):
 				dfs(a, dico, ds, minFrequency, i+1+j, working_set)
 
 
-def is_frequent_itemset(itemset, dico, ds, minFrequency):
+def is_frequent_individual(itemset, dico, ds, minFrequency):
 	"""
 	Checks if the itemset contains only frequent items
 	:param itemset: the itemset
@@ -226,5 +226,5 @@ def visit(itemset, dico, ds, minFrequency):
 
 
 t=time.time()
-alternative_miner("./Datasets/chess.dat", 0.9)
+alternative_miner("./Datasets/connect.dat", 0.9)
 print(time.time()-t)
