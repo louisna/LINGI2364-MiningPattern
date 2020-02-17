@@ -222,9 +222,3 @@ def visit(itemset, dico, ds, minFrequency):
 			dico[tuple(itemset)] = freq_trans
 		print(list(itemset), "({})".format(frequency))
 	return is_frequent
-
-
-
-t=time.time()
-alternative_miner("./Datasets/connect.dat", 0.9)
-print(time.time()-t)
