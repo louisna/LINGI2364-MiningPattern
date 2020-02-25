@@ -62,6 +62,7 @@ class Dataset:
 		return self.transactions[i]
 	"""
 
+
 def is_subset(subset, settt):
 	"""
 	Determines if 'subset' is a subset of 'set'
@@ -83,6 +84,7 @@ def is_subset(subset, settt):
 
 def is_prefix(s1, s2):
 	return s1[:-1] == s2[:-1]
+
 
 def gen_supersets_prefix(sets):
 	ret = []
@@ -108,8 +110,6 @@ def apriori(filepath, minFrequency, tstart):
 	# Current sets working
 	working_set = [[i] for i in ds.items]
 
-
-
 	for level in range(ds.items_num()):  # Check each level
 		# Frequent set
 		frequent = []
@@ -132,7 +132,7 @@ def apriori(filepath, minFrequency, tstart):
 				for i,seti in enumerate(trans):
 					# If the remaining number of transactions is lower than the required frequency
 					if len(trans) - i < minFrequency * ds.trans_num() - support:
-						#print("utilise avec economie", len(trans) - i)
+						# print("utilise avec economie", len(trans) - i)
 						break  # Useless to continue
 					if is_subset(subset, seti):
 						support += 1
@@ -155,43 +155,66 @@ def alternative_miner(filepath, minFrequency,tstart):
 	ds = Dataset(filepath)
 	dico = ds.dico
 
-	data_set = [[i] for i in ds.items]
+	working_set = [[i] for i in ds.items]
 
-	for i, itemset in enumerate(data_set):
-		dfs(itemset, dico, ds, minFrequency, i, data_set,tstart)
-	
-	if time.time() - tstart > tSTOP : 
-			return "ERROR"
+	for i, itemset in enumerate(working_set):
+		dfs(itemset, dico, ds, minFrequency, i, working_set)
 
-def dfs(itemset, dico, ds, minFrequency, i, data_set,tstart):
-	if small_check(itemset, dico, ds, minFrequency, i, data_set):
+
+def dfs(itemset, dico, ds, minFrequency, i, working_set):
+	"""
+	Simple DFS search at the node itemset
+	:param itemset: the itemset
+	:param dico: dictionary containing the transactions
+	:param ds: the dataset
+	:param minFrequency: the minimum frequency for the items
+	:param i:
+	:param working_set: the working set
+	:return: void method
+	"""
+	if is_frequent_individual(itemset, dico, ds, minFrequency):
 		freq = visit(itemset, dico, ds, minFrequency)
-		if freq and i+1 < len(data_set):
-			for j,e in enumerate(data_set[i+1:]):
+		if freq and i+1 < len(working_set):
+			for j, e in enumerate(working_set[i+1:]):
 				a = itemset.copy()
 				a.append(e[0])
-				if time.time() - tstart > tSTOP : 
-					return "ERROR"
-				dfs(a, dico, ds, minFrequency, i+1+j , data_set,tstart)
-	return
+				dfs(a, dico, ds, minFrequency, i+1+j, working_set)
 
-def small_check(itemset, dico, ds, minFrequency, i, data_set):
+
+def is_frequent_individual(itemset, dico, ds, minFrequency):
+	"""
+	Checks if the itemset contains only frequent items
+	:param itemset: the itemset
+	:param dico: dictionary containing the transactions
+	:param ds: dataset
+	:param minFrequency: the minimum frequency for the items
+	:return: True if all items in itemset are frequent, False otherwise
+	"""
 	for e in itemset:
 		support = len(dico[tuple([e])]) 
 		frequency = support / ds.trans_num()
-		if frequency < minFrequency : 
+		if frequency < minFrequency:
 			return False
 	return True
 
+
 def visit(itemset, dico, ds, minFrequency):
+	"""
+	Visit the node itemset, and change the dictionary to add the frequent items of the itemset
+	:param itemset:
+	:param dico:
+	:param ds:
+	:param minFrequency:
+	:return:
+	"""
 	is_frequent = False
 	freq_trans = []
 	support = 0
-	if len(itemset) == 1 :
+	if len(itemset) == 1:
 		support = len(dico[tuple(itemset)]) 
 	else:
 		trans = dico[tuple(itemset[:-1])]
-		for i,seti in enumerate(trans):
+		for i, seti in enumerate(trans):
 			if is_subset(itemset, seti):
 				support += 1
 				freq_trans.append(seti)
@@ -202,10 +225,3 @@ def visit(itemset, dico, ds, minFrequency):
 			dico[tuple(itemset)] = freq_trans
 		#print(list(itemset), "({})".format(frequency))
 	return is_frequent
-
-
-
-t=time.time()
-b = alternative_miner("./Datasets/accidents.dat", 0.9,t)
-print("toy",time.time()-t, b =="ERROR")
-
