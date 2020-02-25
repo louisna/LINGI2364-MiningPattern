@@ -24,6 +24,7 @@ __authors__ = GROUP 23, Edgar Gevorgyan (2018-16-00) AND Louis Navarre (1235-16-
 import itertools
 import time
 
+tSTOP = 5*60
 
 class Dataset:
 	"""Utility class to manage a dataset stored in a external file."""
@@ -96,7 +97,7 @@ def gen_supersets_prefix(sets):
 	return ret
 
 
-def apriori(filepath, minFrequency):
+def apriori(filepath, minFrequency, tstart):
 	"""Runs the apriori algorithm on the specified file with the given minimum frequency"""
 	# TODO: implementation of the apriori algorithm
 
@@ -120,6 +121,8 @@ def apriori(filepath, minFrequency):
 		if len(working_set) == 0:  # No more frequent set
 			break
 		for subset in working_set:
+			if time.time() - tstart > tSTOP : 
+				return "ERROR"
 			freq_trans = []
 			support = 0
 			if level == 0 :
@@ -141,12 +144,12 @@ def apriori(filepath, minFrequency):
 					future_dico[tuple(subset)] = freq_trans
 				else:
 					future_dico[tuple(subset)] = dico[tuple(subset)]
-				print(list(subset), "({})".format(frequency))
+				#print(list(subset), "({})".format(frequency))
 		dico = future_dico
 		working_set = gen_supersets_prefix(frequent)
 
 
-def alternative_miner(filepath, minFrequency):
+def alternative_miner(filepath, minFrequency,tstart):
 	"""Runs the alternative frequent itemset mining algorithm on the specified file with the given minimum frequency"""
 	# Dataset object
 	ds = Dataset(filepath)
@@ -155,16 +158,21 @@ def alternative_miner(filepath, minFrequency):
 	data_set = [[i] for i in ds.items]
 
 	for i, itemset in enumerate(data_set):
-		dfs(itemset, dico, ds, minFrequency, i, data_set)
+		dfs(itemset, dico, ds, minFrequency, i, data_set,tstart)
+	
+	if time.time() - tstart > tSTOP : 
+			return "ERROR"
 
-def dfs(itemset, dico, ds, minFrequency, i, data_set):
+def dfs(itemset, dico, ds, minFrequency, i, data_set,tstart):
 	if small_check(itemset, dico, ds, minFrequency, i, data_set):
 		freq = visit(itemset, dico, ds, minFrequency)
 		if freq and i+1 < len(data_set):
 			for j,e in enumerate(data_set[i+1:]):
 				a = itemset.copy()
 				a.append(e[0])
-				dfs(a, dico, ds, minFrequency, i+1+j , data_set)
+				if time.time() - tstart > tSTOP : 
+					return "ERROR"
+				dfs(a, dico, ds, minFrequency, i+1+j , data_set,tstart)
 	return
 
 def small_check(itemset, dico, ds, minFrequency, i, data_set):
@@ -192,12 +200,12 @@ def visit(itemset, dico, ds, minFrequency):
 		is_frequent = True
 		if len(itemset) > 1:
 			dico[tuple(itemset)] = freq_trans
-		print(list(itemset), "({})".format(frequency))
+		#print(list(itemset), "({})".format(frequency))
 	return is_frequent
 
 
-"""
+
 t=time.time()
-alternative_miner("./Datasets/accidents.dat", 0.9)
-print(time.time()-t)
-"""
+b = alternative_miner("./Datasets/accidents.dat", 0.9,t)
+print("toy",time.time()-t, b =="ERROR")
+
