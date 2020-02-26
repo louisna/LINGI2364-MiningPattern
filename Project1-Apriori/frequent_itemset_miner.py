@@ -24,8 +24,6 @@ __authors__ = GROUP 23, Edgar Gevorgyan (2018-16-00) AND Louis Navarre (1235-16-
 import itertools
 import time
 
-tSTOP = 5*60
-
 class Dataset:
 	"""Utility class to manage a dataset stored in a external file."""
 
@@ -99,7 +97,7 @@ def gen_supersets_prefix(sets):
 	return ret
 
 
-def apriori(filepath, minFrequency, tstart):
+def apriori(filepath, minFrequency):
 	"""Runs the apriori algorithm on the specified file with the given minimum frequency"""
 	# TODO: implementation of the apriori algorithm
 
@@ -121,8 +119,6 @@ def apriori(filepath, minFrequency, tstart):
 		if len(working_set) == 0:  # No more frequent set
 			break
 		for subset in working_set:
-			if time.time() - tstart > tSTOP : 
-				return "ERROR"
 			freq_trans = []
 			support = 0
 			if level == 0 :
@@ -144,12 +140,12 @@ def apriori(filepath, minFrequency, tstart):
 					future_dico[tuple(subset)] = freq_trans
 				else:
 					future_dico[tuple(subset)] = dico[tuple(subset)]
-				#print(list(subset), "({})".format(frequency))
+				print(list(subset), "({})".format(frequency))
 		dico = future_dico
 		working_set = gen_supersets_prefix(frequent)
 
 
-def alternative_miner(filepath, minFrequency,tstart):
+def alternative_miner(filepath, minFrequency):
 	"""Runs the alternative frequent itemset mining algorithm on the specified file with the given minimum frequency"""
 	# Dataset object
 	ds = Dataset(filepath)
@@ -215,6 +211,9 @@ def visit(itemset, dico, ds, minFrequency):
 	else:
 		trans = dico[tuple(itemset[:-1])]
 		for i, seti in enumerate(trans):
+			if len(trans) - i < minFrequency * ds.trans_num() - support:
+				# print("utilise avec economie", len(trans) - i)
+				break  # Useless to continue
 			if is_subset(itemset, seti):
 				support += 1
 				freq_trans.append(seti)
@@ -223,5 +222,5 @@ def visit(itemset, dico, ds, minFrequency):
 		is_frequent = True
 		if len(itemset) > 1:
 			dico[tuple(itemset)] = freq_trans
-		#print(list(itemset), "({})".format(frequency))
+		print(list(itemset), "({})".format(frequency))
 	return is_frequent
