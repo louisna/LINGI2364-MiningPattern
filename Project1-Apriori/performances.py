@@ -3,6 +3,8 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
+freq = [1., 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+
 apriori_times = [
     [0.00015, 0.0003039, 0.000299, 0.000313, 0.000315, 0.00029, 0.00030, 0.000417, 0.00043, 0.0005],
     [0.1562, 10.62816, 119.0594],
@@ -25,6 +27,23 @@ dfs_times = [
     [16.844, 39.0213, 223.828]
 ]
 
+
+def plot_result():
+    a1 = apriori_times[3]
+    l1 = len(a1)
+
+    d1 = dfs_times[3]
+    l2 = len(d1)
+    plt.plot(freq[:l1], a1, marker='s', markersize=4, label="Apriori")
+    plt.plot(freq[:l2], d1, marker='s', markersize=4, label="DFS-based")
+    plt.gca().invert_xaxis()
+    plt.legend(loc='upper left')
+    plt.title("pumsb_star dataset")
+    plt.xlabel("Frequency")
+    plt.ylabel("Execution time [s]")
+
+    plt.show()
+
 """
 def plot_apriori_vs_dfs(filename, freq_min=0.7, freq_max=0.9, step=0.1):
     frequences = np.arange(freq_min, freq_max, step)
@@ -44,6 +63,5 @@ def plot_apriori_vs_dfs(filename, freq_min=0.7, freq_max=0.9, step=0.1):
 """
 
 
-
 if __name__ == "__main__":
-    pass
+    plot_result()
