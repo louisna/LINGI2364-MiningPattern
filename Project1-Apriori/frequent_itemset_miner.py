@@ -24,7 +24,6 @@ __authors__ = GROUP 23, Edgar Gevorgyan (2018-16-00) AND Louis Navarre (1235-16-
 import itertools
 import time
 
-
 class Dataset:
 	"""Utility class to manage a dataset stored in a external file."""
 
@@ -212,6 +211,9 @@ def visit(itemset, dico, ds, minFrequency):
 	else:
 		trans = dico[tuple(itemset[:-1])]
 		for i, seti in enumerate(trans):
+			if len(trans) - i < minFrequency * ds.trans_num() - support:
+				# print("utilise avec economie", len(trans) - i)
+				break  # Useless to continue
 			if is_subset(itemset, seti):
 				support += 1
 				freq_trans.append(seti)
