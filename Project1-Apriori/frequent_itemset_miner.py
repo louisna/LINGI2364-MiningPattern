@@ -159,10 +159,10 @@ def alternative_miner(filepath, minFrequency,t):
 	working_set = [[i] for i in ds.items]
 
 	for i, itemset in enumerate(working_set):
-		dfs(itemset, dico, ds, minFrequency, i, working_set,t)
+		dfs(itemset, dico, ds, minFrequency, i, working_set, t)
 
 
-def dfs(itemset, dico, ds, minFrequency, i, working_set,t):
+def dfs(itemset, dico, ds, minFrequency, i, working_set, t):
 	"""
 	Simple DFS search at the node itemset
 	:param itemset: the itemset
