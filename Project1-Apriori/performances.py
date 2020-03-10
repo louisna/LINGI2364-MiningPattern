@@ -29,13 +29,13 @@ dfs_times = [
 
 
 def plot_result():
-    a1 = apriori_times[6]
+    a1 = apriori_times[4]
     l1 = len(a1)
 
-    d1 = dfs_times[6]
+    d1 = dfs_times[4]
     l2 = len(d1)
-    plt.plot(freq[:l1], a1, marker='s', markersize=4, label="Apriori")
-    plt.plot(freq[:l2], d1, marker='s', markersize=4, label="DFS-based")
+    plt.plot(freq[:l1], a1, marker='s', markersize=7, label="Apriori", linestyle='dashed')
+    plt.plot(freq[:l2], d1, marker='^', markersize=7, label="DFS-based", linestyle='dashed')
     plt.gca().invert_xaxis()
     plt.legend(loc='upper left')
     plt.title("pumsp_star dataset")
