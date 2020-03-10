@@ -1,0 +1,24 @@
+_________________________
+r= 1
+Current memory usage is 0.118638MB; Peak was 111.266579MB
+pumsb_star 7.091726064682007
+_________________________
+r= 0.9
+Current memory usage is 0.005528MB; Peak was 111.155237MB
+pumsb_star 7.02032208442688
+_________________________
+r= 0.8
+Current memory usage is 0.001424MB; Peak was 111.151013MB
+pumsb_star 6.9695210456848145
+_________________________
+r= 0.7000000000000001
+Current memory usage is 0.022424MB; Peak was 111.166941MB
+pumsb_star 13.702194213867188
+_________________________
+r= 0.6000000000000001
+Current memory usage is 0.017136MB; Peak was 138.706028MB
+pumsb_star 82.20798897743225
+_________________________
+r= 0.5000000000000001
+Current memory usage is 0.041496MB; Peak was 250.875528MB
+pumsb_star 532.8917229175568

@@ -145,7 +145,7 @@ def apriori(filepath, minFrequency,tSTART):
 				else:
 					future_dico[tuple(subset)] = dico[tuple(subset)]
 				#print(list(subset), "({})".format(frequency))
-		print("time up to level ",level,":",time.time()-tSTART)
+		#print("time up to level ",level,":",time.time()-tSTART)
 		dico = future_dico
 		working_set = gen_supersets_prefix(frequent)
 
@@ -240,9 +240,9 @@ while(r >= 0.5):
 	print("r=",r)
 	t=time.time()
 	tracemalloc.start()
-	apriori("./Datasets/mushroom.dat", r,t)
+	alternative_miner("./Datasets/pumsb_star.dat", r,t)
 	current, peak = tracemalloc.get_traced_memory()
 	print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
 	tracemalloc.stop()
-	print("mushroom",time.time()-t)
+	print("pumsb_star",time.time()-t)
 	r -= 0.1
