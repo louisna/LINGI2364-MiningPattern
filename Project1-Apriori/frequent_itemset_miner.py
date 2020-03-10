@@ -24,6 +24,8 @@ __authors__ = GROUP 23, Edgar Gevorgyan (2018-16-00) AND Louis Navarre (1235-16-
 import itertools
 import time
 
+tSTOP = 600
+
 class Dataset:
 	"""Utility class to manage a dataset stored in a external file."""
 
@@ -97,7 +99,7 @@ def gen_supersets_prefix(sets):
 	return ret
 
 
-def apriori(filepath, minFrequency):
+def apriori(filepath, minFrequency,tSTART):
 	"""Runs the apriori algorithm on the specified file with the given minimum frequency"""
 	# TODO: implementation of the apriori algorithm
 
@@ -114,7 +116,8 @@ def apriori(filepath, minFrequency):
 
 		# Future dico
 		future_dico = dict()
-
+		if time.time() - tSTART >= tSTOP : 
+			break
 		# Monotonicity property
 		if len(working_set) == 0:  # No more frequent set
 			break
@@ -140,12 +143,13 @@ def apriori(filepath, minFrequency):
 					future_dico[tuple(subset)] = freq_trans
 				else:
 					future_dico[tuple(subset)] = dico[tuple(subset)]
-				print(list(subset), "({})".format(frequency))
+				#print(list(subset), "({})".format(frequency))
+		print("time up to level ",level,":",time.time()-tSTART)
 		dico = future_dico
 		working_set = gen_supersets_prefix(frequent)
 
 
-def alternative_miner(filepath, minFrequency):
+def alternative_miner(filepath, minFrequency,t):
 	"""Runs the alternative frequent itemset mining algorithm on the specified file with the given minimum frequency"""
 	# Dataset object
 	ds = Dataset(filepath)
@@ -154,10 +158,10 @@ def alternative_miner(filepath, minFrequency):
 	working_set = [[i] for i in ds.items]
 
 	for i, itemset in enumerate(working_set):
-		dfs(itemset, dico, ds, minFrequency, i, working_set)
+		dfs(itemset, dico, ds, minFrequency, i, working_set,t)
 
 
-def dfs(itemset, dico, ds, minFrequency, i, working_set):
+def dfs(itemset, dico, ds, minFrequency, i, working_set,t):
 	"""
 	Simple DFS search at the node itemset
 	:param itemset: the itemset
@@ -168,13 +172,15 @@ def dfs(itemset, dico, ds, minFrequency, i, working_set):
 	:param working_set: the working set
 	:return: void method
 	"""
+	if time.time() - t > tSTOP:
+		return
 	if is_frequent_individual(itemset, dico, ds, minFrequency):
 		freq = visit(itemset, dico, ds, minFrequency)
 		if freq and i+1 < len(working_set):
 			for j, e in enumerate(working_set[i+1:]):
 				a = itemset.copy()
 				a.append(e[0])
-				dfs(a, dico, ds, minFrequency, i+1+j, working_set)
+				dfs(a, dico, ds, minFrequency, i+1+j, working_set,t)
 
 
 def is_frequent_individual(itemset, dico, ds, minFrequency):
@@ -222,5 +228,19 @@ def visit(itemset, dico, ds, minFrequency):
 		is_frequent = True
 		if len(itemset) > 1:
 			dico[tuple(itemset)] = freq_trans
-		print(list(itemset), "({})".format(frequency))
+		#print(list(itemset), "({})".format(frequency))
 	return is_frequent
+
+
+
+r= 1
+while(r >= 0.3):
+	print("_________________________")
+	print("r=",r)
+
+
+
+	t=time.time()
+	apriori("./Datasets/pumsb_star.dat", r,t)
+	print("pumsb_star",time.time()-t)
+	r -= 0.1
