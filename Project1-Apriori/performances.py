@@ -29,19 +29,20 @@ dfs_times = [
 
 
 def plot_result():
-    a1 = apriori_times[3]
+    a1 = apriori_times[6]
     l1 = len(a1)
 
-    d1 = dfs_times[3]
+    d1 = dfs_times[6]
     l2 = len(d1)
     plt.plot(freq[:l1], a1, marker='s', markersize=4, label="Apriori")
     plt.plot(freq[:l2], d1, marker='s', markersize=4, label="DFS-based")
     plt.gca().invert_xaxis()
     plt.legend(loc='upper left')
-    plt.title("pumsb_star dataset")
+    plt.title("pumsp_star dataset")
     plt.xlabel("Frequency")
     plt.ylabel("Execution time [s]")
 
+    # plt.savefig("pumsb_star.png")
     plt.show()
 
 """
