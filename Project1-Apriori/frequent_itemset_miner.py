@@ -23,8 +23,9 @@ __authors__ = GROUP 23, Edgar Gevorgyan (2018-16-00) AND Louis Navarre (1235-16-
 
 import itertools
 import time
+import tracemalloc
 
-tSTOP = 600
+tSTOP = 900
 
 class Dataset:
 	"""Utility class to manage a dataset stored in a external file."""
@@ -234,13 +235,14 @@ def visit(itemset, dico, ds, minFrequency):
 
 
 r= 1
-while(r >= 0.3):
+while(r >= 0.5):
 	print("_________________________")
 	print("r=",r)
-
-
-
 	t=time.time()
-	apriori("./Datasets/pumsb_star.dat", r,t)
-	print("pumsb_star",time.time()-t)
+	tracemalloc.start()
+	apriori("./Datasets/mushroom.dat", r,t)
+	current, peak = tracemalloc.get_traced_memory()
+	print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+	tracemalloc.stop()
+	print("mushroom",time.time()-t)
 	r -= 0.1
