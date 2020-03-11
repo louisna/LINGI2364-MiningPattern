@@ -1,3 +1,4 @@
+#from frequent_itemset_miner import *
 import numpy as np
 import time
 import matplotlib.pyplot as plt
@@ -20,7 +21,7 @@ dfs_times = [
     [0.1507, 15.69, 180.251],
     [3.921],
     [0.283, 0.474, 0.74469, 0.7852, 1.60527, 3.74387, 15.5614, 60.8258, 704.2694],
-    [3.537, 3.3774, 3.49497, 8.8604, 67.627],
+    [3.537, 3.3774, 3.49497, 8.8604, 67.627, 431.66],
     [5.429],
     [1.6123, 1.5365, 1.5656, 1.6984, 1.619, 1.42319, 1.559, 1.5142, 1.545, 2.0890],
     [16.844, 39.0213, 223.828]
@@ -42,7 +43,7 @@ def plot_result():
     plt.xlabel("Frequency")
     plt.ylabel("Execution time (s)")
 
-    # plt.savefig("pumsb_star.png")
+    plt.savefig("pumsb_star.png")
     plt.show()
 
 
