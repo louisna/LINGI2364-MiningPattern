@@ -235,14 +235,14 @@ def visit(itemset, dico, ds, minFrequency):
 
 
 r= 1
-while(r >= 0.5):
+while(r >= 0.3):
 	print("_________________________")
 	print("r=",r)
 	t=time.time()
 	tracemalloc.start()
-	alternative_miner("./Datasets/pumsb_star.dat", r,t)
+	apriori("./Datasets/mushroom.dat", r,t)
 	current, peak = tracemalloc.get_traced_memory()
-	print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+	print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6} MB")
 	tracemalloc.stop()
-	print("pumsb_star",time.time()-t)
+	print("mushroom",time.time()-t)
 	r -= 0.1

@@ -27,6 +27,14 @@ dfs_times = [
     [16.844, 39.0213, 223.828]
 ]
 
+#mushroom
+#pumsb_star TIME OUT for all freq
+# with prefix gen TIME OUT à 10 min
+apriori_naive = [
+    [2.702, 3.161, 3.625, 3.948, 5.1236, 11.227, 37.3219,162.427]
+]
+
+
 
 def plot_result():
     a1 = apriori_times[3]
@@ -90,7 +98,18 @@ def plot_level():
 
 memory_aprori = [111.267171, 111.155237, 111.150701, 111.166941, 121.298752, 182.197952]
 memory_dfs = [111.266579, 111.155237, 111.151013, 111.166941, 138.706028, 250.875528]
-
+#mushroom memory analyse
+apriori_naive_memory = [
+    [3.507835,3.505159,3.505159,3.505159,3.505159,3.505159,3.505159,3.505159]
+]
+#mushroom memory analyse
+apriori_memory = [
+    [5.041407,5.029299,5.029299,5.203988,5.884556,8.227916,15.87904,40.19978]
+]
+#mushroom memory analyse
+dfs_memory = [
+    [5.040815,5.029299,5.106828,5.543244,6.313276,9.96942,22.26676,72.970324]
+]
 def plot_memory():
     x = [1., 0.9, 0.8, 0.7, 0.6, 0.5]
     plt.plot(x, memory_aprori, marker='s', markersize=7, label="Apriori", linestyle='dashed')
@@ -105,4 +124,4 @@ def plot_memory():
 
 if __name__ == "__main__":
     # plot_level()
-    plot_memory()
+    plot_result()

@@ -1,7 +1,6 @@
 import itertools
-
-import itertools
 import time
+import tracemalloc
 
 
 class Dataset:
@@ -84,8 +83,9 @@ def gen_supersets_prefix(ds, level, sets):
                 break
     return ret
 
+tSTOP = 600
 
-def apriori(filepath, minFrequency):
+def apriori(filepath, minFrequency,t):
     """Runs the apriori algorithm on the specified file with the given minimum frequency"""
     # TODO: implementation of the apriori algorithm
 
@@ -101,7 +101,8 @@ def apriori(filepath, minFrequency):
     for level in range(ds.items_num()):  # Check each level
         # Frequent set
         frequent = []
-
+        if (time.time() - t >= tSTOP ): 
+            return False
         # Monotonicity property
         if previous_frequent == 0:
             break
@@ -121,9 +122,22 @@ def apriori(filepath, minFrequency):
             if frequency >= minFrequency:
                 previous_frequent += 1
                 frequent.append(subset)
-                print(list(subset), "({})".format(frequency))
-        working_set = gen_supersets_naive(ds, level)
-        #working_set = gen_supersets_prefix(ds, level, frequent)
+                #print(list(subset), "({})".format(frequency))
+        #working_set = gen_supersets_naive(ds, level)
+        working_set = gen_supersets_prefix(ds, level, frequent)
+    return True
 
-
-apriori("./Datasets/chess.dat", 0.9)
+r = 1
+while(r >= 0.1):
+    print("_________________________")
+    print("r=",r)
+    t=time.time()
+    tracemalloc.start()
+    if( not apriori("./Datasets/mushroom.dat", r,t)):
+        print("TIMEOUT")
+        break 
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6} MB")
+    tracemalloc.stop()
+    print("mushroom",time.time()-t)
+    r -= 0.1
