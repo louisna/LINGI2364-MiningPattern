@@ -31,20 +31,25 @@ dfs_times = [
 #pumsb_star TIME OUT for all freq
 # with prefix gen TIME OUT à 10 min
 apriori_naive = [
-    [2.702, 3.161, 3.625, 3.948, 5.1236, 11.227, 37.3219,162.427]
+    [2.702, 3.161, 3.625, 3.948, 5.1236, 11.227, 37.3219, 162.427]
 ]
 
 
 
 def plot_result():
-    a1 = apriori_times[3]
+    a1 = apriori_times[4]
     l1 = len(a1)
 
-    d1 = dfs_times[3]
+    d1 = dfs_times[4]
     print(d1)
     l2 = len(d1)
-    plt.plot(freq[:l1], a1, marker='s', markersize=7, label="Apriori", linestyle='dashed')
-    plt.plot(freq[:l2], d1, marker='^', markersize=7, label="DFS-based", linestyle='dashed')
+
+    n1 = apriori_naive[0]
+    l3 = len(n1)
+
+    # plt.plot(freq[:l3], n1, marker='s', markersize=7, label="Naive Apriori", linestyle='dashed', color="C0")
+    plt.plot(freq[:l1], a1, marker='o', markersize=7, label="Apriori V2", linestyle='dashed', alpha=0.8, color="C1")
+    plt.plot(freq[:l2], d1, marker='^', markersize=7, label="DFS-based", linestyle='dashed', alpha=0.6, color="C2")
     plt.gca().invert_xaxis()
     plt.legend(loc='upper left')
     plt.title("pumsb_star dataset")
@@ -124,4 +129,5 @@ def plot_memory():
 
 if __name__ == "__main__":
     # plot_level()
+    # plot_result()
     plot_result()
