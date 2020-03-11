@@ -38,9 +38,9 @@ def plot_result():
     plt.plot(freq[:l2], d1, marker='^', markersize=7, label="DFS-based", linestyle='dashed')
     plt.gca().invert_xaxis()
     plt.legend(loc='upper left')
-    plt.title("pumsp_star dataset")
+    plt.title("pumsb_star dataset")
     plt.xlabel("Frequency")
-    plt.ylabel("Execution time [s]")
+    plt.ylabel("Execution time (s)")
 
     # plt.savefig("pumsb_star.png")
     plt.show()
@@ -87,5 +87,21 @@ def plot_level():
     plt.show()
 
 
+memory_aprori = [111.267171, 111.155237, 111.150701, 111.166941, 121.298752, 182.197952]
+memory_dfs = [111.266579, 111.155237, 111.151013, 111.166941, 138.706028, 250.875528]
+
+def plot_memory():
+    x = [1., 0.9, 0.8, 0.7, 0.6, 0.5]
+    plt.plot(x, memory_aprori, marker='s', markersize=7, label="Apriori", linestyle='dashed')
+    plt.plot(x, memory_dfs, marker='^', markersize=7, label="DFS-based", linestyle='dashed')
+    plt.gca().invert_xaxis()
+    plt.xlabel("Minimum frequency")
+    plt.ylabel("Maximum memory consummed during the search (MB)")
+    plt.title("pumsb_star")
+    plt.legend()
+    plt.savefig("memory.png")
+    plt.show()
+
 if __name__ == "__main__":
-    plot_level()
+    # plot_level()
+    plot_memory()
