@@ -37,26 +37,29 @@ apriori_naive = [
 
 
 def plot_result():
-    a1 = apriori_times[4]
+    a1 = apriori_times[3]
     l1 = len(a1)
 
-    d1 = dfs_times[4]
+    d1 = dfs_times[3]
     print(d1)
     l2 = len(d1)
 
     n1 = apriori_naive[0]
     l3 = len(n1)
 
-    # plt.plot(freq[:l3], n1, marker='s', markersize=7, label="Naive Apriori", linestyle='dashed', color="C0")
-    plt.plot(freq[:l1], a1, marker='o', markersize=7, label="Apriori V2", linestyle='dashed', alpha=0.8, color="C1")
-    plt.plot(freq[:l2], d1, marker='^', markersize=7, label="DFS-based", linestyle='dashed', alpha=0.6, color="C2")
+    # plt.plot(freq[:l3], n1, marker='s', markersize=7, label="Naive Apriori", linestyle='dashed', color="C2")
+    plt.plot(freq[:l1], a1, marker='o', markersize=7, label="Apriori", linestyle='dashed', alpha=0.8, color="C0")
+    plt.plot(freq[:l2], d1, marker='^', markersize=7, label="DFS-based", linestyle='dashed', alpha=0.6, color="C1")
     plt.gca().invert_xaxis()
     plt.legend(loc='upper left')
     plt.title("pumsb_star dataset")
+    # plt.title("mushroom dataset")
     plt.xlabel("Frequency")
     plt.ylabel("Execution time (s)")
+    plt.grid()
 
     plt.savefig("pumsb_star.png")
+    # plt.savefig("mushroom.png")
     plt.show()
 
 
@@ -117,17 +120,19 @@ dfs_memory = [
 ]
 def plot_memory():
     x = [1., 0.9, 0.8, 0.7, 0.6, 0.5]
-    plt.plot(x, memory_aprori, marker='s', markersize=7, label="Apriori", linestyle='dashed')
+    plt.plot(x, memory_aprori, marker='o', markersize=7, label="Apriori", linestyle='dashed')
     plt.plot(x, memory_dfs, marker='^', markersize=7, label="DFS-based", linestyle='dashed')
     plt.gca().invert_xaxis()
     plt.xlabel("Minimum frequency")
     plt.ylabel("Maximum memory consummed during the search (MB)")
     plt.title("pumsb_star")
     plt.legend()
+    plt.grid()
     plt.savefig("memory.png")
     plt.show()
 
+
 if __name__ == "__main__":
     # plot_level()
-    # plot_result()
     plot_result()
+    # plot_memory()
