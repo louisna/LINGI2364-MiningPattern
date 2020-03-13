@@ -189,9 +189,9 @@ def dfs(itemset, dico, ds, minFrequency, i, working_set):
 	if is_frequent_individual(itemset, dico, ds, minFrequency):
 		# Visit the node
 		freq = visit(itemset, dico, ds, minFrequency)
-		# If frequent itemset and there are sill item to visit
+		# If frequent itemset and there are sill items to visit
 		if freq and i+1 < len(working_set):
-			# working_set[i+1:] containt all children of current nodes (the future item that we should visit)
+			# working_set[i+1:] contains all children of current nodes (the future item that we should visit)
 			for j, e in enumerate(working_set[i+1:]):
 				a = itemset.copy()
 				a.append(e[0])
