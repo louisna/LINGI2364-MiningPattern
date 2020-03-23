@@ -132,3 +132,5 @@ Project1-Apriori/Datasets/*.txt
 Project1-Apriori/Datasets/*.dat
 *.xml
 *.iml
+
+.idea
