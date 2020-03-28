@@ -6,7 +6,7 @@ class Datasets:
     def __init__(self, pos, neg, all_symbols):
         self.pos = pos
         self.neg = neg
-        self.all_symbols = all_symbols
+        self.all_symbols = [i for i in all_symbols]
 
 class Dataset:
     """Utility class to manage a dataset stored in a external file."""
@@ -133,8 +133,7 @@ def projection(added_symbol, bestK, proj):
     for symbol, trans in proj.items():
         # The new array containing the projection for 'symbol' with the addition of added_symbol
         new_freq_trans = filter_trans(trans, first_occ_added_symbol)
-        if len(new_freq_trans) >= bestK.min_total_support:  # Frequent item
-            new_proj[tuple(symbol)] = new_freq_trans
+        new_proj[tuple(symbol)] = new_freq_trans
     return new_proj
 
 
@@ -172,14 +171,6 @@ def filter_trans(trans, first_occ_added_symbol):
     return out
 
 
-def count_occurences(projection):
-    total = 0
-    for symbol in projection.keys():
-        a = first_occ(symbol, projection)
-        total += len(a)
-    return total
-
-
 def count_occurences_symbol(projection, symbol):
     return len(first_occ(symbol, projection))
 
@@ -190,7 +181,7 @@ def SPADE(data_pos, data_neg, bestk):
     all_symbols = data_pos.symbols.union(data_neg.symbols)
     all_symbols_list = [i for i in all_symbols]
     all_symbols_list.sort()
-    #for symbol in all_symbols_list:
+
     dfs([], bestk, Datasets(data_pos, data_neg, all_symbols), data_pos.vertical, data_neg.vertical)
 
     # Print the result
@@ -200,20 +191,29 @@ def SPADE(data_pos, data_neg, bestk):
 # TODO: Maybe error if pos & neg don't have exactly the same symbols
 # TODO: Maybe the 2 checks are useless
 def dfs(sequence, bestk, dss, proj_pos, proj_neg):
+    #if sequence == ['C']:
+    #    print("passage DEBUT")
+    #    print(bestk.min_total_support)
+    #    print(proj_pos)
     for symbol in dss.all_symbols:
         if tuple(symbol) in proj_pos.keys() or tuple(symbol) in proj_neg.keys():
             support_pos = count_occurences_symbol(proj_pos, symbol)
             support_neg = count_occurences_symbol(proj_neg, symbol)
             support = support_pos + support_neg
-            if support > bestk.min_total_support:  # Frequent symbol in this sequence
+            if support >= bestk.min_total_support:  # Frequent symbol in this sequence
                 new_pos = projection(symbol, bestk, proj_pos)
                 new_neg = projection(symbol, bestk, proj_neg)
                 if len(new_pos) + len(new_neg) > 0:
                     new_sequence = sequence.copy()
                     new_sequence.append(symbol)
 
+                    #if sequence == ['C']:
+                    #    print("je suis la")
+
                     bestk.add_frequent(new_sequence, support_pos, support_neg)
                     dfs(new_sequence, bestk, dss, new_pos, new_neg)
+    #if sequence == ["C"]:
+    #    print("passage FIN")
 
 
 def main():
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     main()
 
 
-# python3 frequent_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 1
+# python3 frequent_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt
 # python3 frequent_sequence_mining.py Datasets/Test/positive.txt Datasets/Test/negative.txt 1
 
 
