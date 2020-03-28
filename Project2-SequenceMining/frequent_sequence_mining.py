@@ -3,10 +3,54 @@ import random
 random.seed(1998)
 
 class Datasets:
-    def __init__(self, pos, neg, all_symbols):
+    def __init__(self, pos, neg, all_symbols, bestk):
         self.pos = pos
         self.neg = neg
         self.all_symbols = [i for i in all_symbols]
+        self.bestk = bestk
+        self.first_pruning()
+
+    def first_pruning(self):
+        best_unique = []
+        for symbol in self.all_symbols:
+            sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
+            sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
+            tot_sup = len(sup_pos) + len(sup_neg)
+            min_sup = sys.maxsize
+            in_list = False
+            if len(best_unique) < self.bestk.k:
+                best_unique.append(tot_sup)
+            else:
+                for s in best_unique:
+                    if s == tot_sup:
+                        in_list = True
+                    min_sup = min(min_sup, s)
+                if not in_list and min_sup < tot_sup:
+                    best_unique.remove(min_sup)
+                    best_unique.append(tot_sup)
+
+        new_pos = dict()
+        new_neg = dict()
+
+        min_sup = min(best_unique)
+
+        for symbol in self.all_symbols:
+            sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
+            sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
+            tot_sup = len(sup_pos) + len(sup_neg)
+            if tot_sup in best_unique:
+                # Remove
+                # del self.pos.vertical[(symbol,)[0]]
+                # del self.neg.vertical[(symbol,)[0]]
+                if symbol in self.pos.symbols:
+                    new_pos[(symbol,)[0]] = self.pos.vertical[(symbol,)[0]]
+                if symbol in self.neg.symbols:
+                    new_neg[(symbol,)[0]] = self.neg.vertical[(symbol,)[0]]
+        self.pos.vertical = new_pos
+        self.neg.vertical = new_neg
+        if len(best_unique) == self.bestk.k:
+            self.bestk.min_total_support = min_sup
+
 
 class Dataset:
     """Utility class to manage a dataset stored in a external file."""
@@ -24,6 +68,7 @@ class Dataset:
         self.vertical = dict()
         self.nb_trans = 0
         self.symbols_list = []
+        self.vertical_first = dict()
         self.open_vertical(filepath)
 
         # print(self.vertical)
@@ -41,6 +86,14 @@ class Dataset:
                 a += (symbol,)
                 self.vertical[a[0]] = self.vertical.get(a[0], [])
                 self.vertical[a[0]].append((tr_nb, int(place)-1))
+
+                new_vertical_first = self.vertical_first.get(a[0], [])
+                if new_vertical_first:
+                    if new_vertical_first[-1] != tr_nb:
+                        new_vertical_first.append(tr_nb)
+                else:
+                    new_vertical_first.append(tr_nb)
+                self.vertical_first[a[0]] = new_vertical_first
 
         self.nb_trans += tr_nb
         for i in self.symbols:
@@ -188,7 +241,7 @@ def SPADE(data_pos, data_neg, bestk):
     all_symbols_list = [i for i in all_symbols]
     all_symbols_list.sort()
 
-    dfs([], bestk, Datasets(data_pos, data_neg, all_symbols), data_pos.vertical, data_neg.vertical)
+    dfs([], bestk, Datasets(data_pos, data_neg, all_symbols, bestk), data_pos.vertical, data_neg.vertical)
 
     # Print the result
     bestk.print_bestk()
