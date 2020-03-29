@@ -39,8 +39,10 @@ class Datasets:
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
-            threshold = ((self.bestk.P + self.bestk.N)*self.bestk.min_Wracc + len(sup_neg)*self.bestk.P)/self.bestk.N
-            if len(sup_pos) >= threshold:  # Frequent symbol in this sequence
+            coef = ((self.bestk.P / (self.bestk.P + self.bestk.N)) * (self.bestk.N / (self.bestk.P + self.bestk.N)))
+            threshold = (self.bestk.min_Wracc / coef) * self.bestk.P
+            if Wracc(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= self.bestk.min_Wracc or len(
+                    sup_pos) >= threshold:
                 # Remove
                 # del self.pos.vertical[(symbol,)[0]]
                 # del self.neg.vertical[(symbol,)[0]]
@@ -145,6 +147,8 @@ class BestK:
 
     def add_frequent(self, sequence, support_pos, support_neg):
         wacc = Wracc(self.P,self.N,support_pos,support_neg)
+        if wacc < self.min_Wracc:
+            return
         if len(self.best_k) < self.k:
             # Not full
             for i in range(len(self.best_k)):
@@ -184,7 +188,7 @@ class BestK:
 
 
 def Wracc (P,N,p,n):
-    return ((P/(P+N))*(N/(P+N)))*(p/P - n/N)
+    return round(((P/(P+N))*(N/(P+N)))*(p/P - n/N), 5)
 
 
 def projection(added_symbol, bestK, proj):
@@ -268,9 +272,11 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             # Support before projection
             support_pos = count_occurences_symbol(proj_pos, symbol)
             support_neg = count_occurences_symbol(proj_neg, symbol)
-            threshold = ((bestk.P + bestk.N)*bestk.min_Wracc + support_neg*bestk.P)/bestk.N
+            coef = ((bestk.P / (bestk.P + bestk.N)) * (bestk.N / (bestk.P + bestk.N)))
+            threshold = (bestk.min_Wracc / coef) * bestk.P
             # Threshold set to 0
-            if support_pos >= 0:  # Frequent symbol in this sequence
+            if Wracc(bestk.P, bestk.N, support_pos,
+                     support_neg) >= bestk.min_Wracc or support_pos >= threshold:  # Frequent symbol in this sequence
                 new_pos = projection(symbol, bestk, proj_pos)
                 new_neg = projection(symbol, bestk, proj_neg)
 
