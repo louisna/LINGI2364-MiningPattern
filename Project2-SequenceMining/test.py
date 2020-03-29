@@ -2,20 +2,22 @@ import sys
 import random
 random.seed(1998)
 
+epsilon = 10 ** -6
+
 class Datasets:
     def __init__(self, pos, neg, all_symbols, bestk):
         self.pos = pos
         self.neg = neg
         self.all_symbols = [i for i in all_symbols]
         self.bestk = bestk
-        #self.first_pruning()
+        # self.first_pruning()
 
     def first_pruning(self):
         best_unique = []
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
-            wracc = Wracc(self.bestk.P,self.bestk.N,len(sup_pos),len(sup_neg))
+            wracc = Wracc(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg))
             min_wracc = sys.maxsize
             in_list = False
             if len(best_unique) < self.bestk.k:
@@ -137,34 +139,35 @@ class BestK:
     def __init__(self, k,P,N):
         self.k = k
         self.best_k = []
-        self.min_Wracc = -(sys.maxsize-10)
+        self.min_Wracc = 0
         self.P = P
         self.N = N
 
     def add_frequent(self, sequence, support_pos, support_neg):
+        wacc = Wracc(self.P,self.N,support_pos,support_neg)
         if len(self.best_k) < self.k:
             # Not full
             for i in range(len(self.best_k)):
                 (sequences, support) = self.best_k[i]
-                if support == support_pos + support_neg:
+                if support == wacc:
                     # Already an existing
                     sequences.append((sequence, support_pos, support_neg))
                     return
             # Not in there
-            self.best_k.append(([(sequence, support_pos, support_neg)], Wracc(self.P,self.N,support_pos,support_neg)))
+            self.best_k.append(([(sequence, support_pos, support_neg)], wacc))
             self.best_k.sort(key=lambda b: b[1])
         else:  # Full
 
             # Check if this min support is already there
             for i in range(len(self.best_k)):
                 (sequences, support) = self.best_k[i]
-                if support == support_pos + support_neg:
+                if abs(support - wacc) < epsilon:
                     # Already an existing
                     sequences.append((sequence, support_pos, support_neg))
                     return
             # Not in there => remove first
             self.best_k.pop(0)
-            self.best_k.append(([(sequence, support_pos, support_neg)], Wracc(self.P,self.N,support_pos,support_neg)))
+            self.best_k.append(([(sequence, support_pos, support_neg)], wacc))
             self.best_k.sort(key=lambda b: b[1])
 
             self.min_Wracc = self.best_k[0][1]
@@ -176,12 +179,12 @@ class BestK:
                 for elem in sequence:
                     st = st + elem + ", "
                 st = st[:-2]
-                print('[{}]'.format(st), sup_pos, sup_neg, Wracc(self.P,self.N,sup_pos,sup_neg))
+                print('[{}]'.format(st), sup_pos, sup_neg, support)
                 pass
 
 
 def Wracc (P,N,p,n):
-    return ((P/P+N)*(N/(P+N)))*(p/P - n/N)
+    return ((P/(P+N))*(N/(P+N)))*(p/P - n/N)
 
 
 def projection(added_symbol, bestK, proj):
@@ -266,7 +269,8 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             support_pos = count_occurences_symbol(proj_pos, symbol)
             support_neg = count_occurences_symbol(proj_neg, symbol)
             threshold = ((bestk.P + bestk.N)*bestk.min_Wracc + support_neg*bestk.P)/bestk.N
-            if support_pos >= threshold:  # Frequent symbol in this sequence
+            # Threshold set to 0
+            if support_pos >= 0:  # Frequent symbol in this sequence
                 new_pos = projection(symbol, bestk, proj_pos)
                 new_neg = projection(symbol, bestk, proj_neg)
 
@@ -299,6 +303,6 @@ if __name__ == "__main__":
     main()
 
 
-# python3 frequent_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
-# python3 frequent_sequence_mining.py Datasets/Test/positive.txt Datasets/Test/negative.txt 1
-# python3 frequent_sequence_mining.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
+# python3 test.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
+# python3 test.py Datasets/Test/positive.txt Datasets/Test/negative.txt 1
+# python3 test.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
