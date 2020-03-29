@@ -10,10 +10,11 @@ class Datasets:
         self.neg = neg
         self.all_symbols = [i for i in all_symbols]
         self.bestk = bestk
-        # self.first_pruning()
+        self.first_pruning()
 
     def first_pruning(self):
         best_unique = []
+        symbol_sort = []
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
@@ -36,13 +37,17 @@ class Datasets:
 
         min_wracc = min(best_unique)
 
+        new_all_symbols = []
+
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
             coef = ((self.bestk.P / (self.bestk.P + self.bestk.N)) * (self.bestk.N / (self.bestk.P + self.bestk.N)))
-            threshold = (self.bestk.min_Wracc / coef) * self.bestk.P
-            if Wracc(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= self.bestk.min_Wracc or len(
+            threshold = (min_wracc / coef) * self.bestk.P
+            if Wracc(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= min_wracc or len(
                     sup_pos) >= threshold:
+                new_all_symbols.append(symbol)
+
                 # Remove
                 # del self.pos.vertical[(symbol,)[0]]
                 # del self.neg.vertical[(symbol,)[0]]
@@ -54,6 +59,7 @@ class Datasets:
         self.neg.vertical = new_neg
         if len(best_unique) == self.bestk.k:
             self.bestk.min_wracc = min_wracc
+        self.all_symbols = new_all_symbols
 
 
 class Dataset:

@@ -34,6 +34,8 @@ class Datasets:
 
         min_sup = min(best_unique)
 
+        new_all_symbols = []
+
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
@@ -42,6 +44,7 @@ class Datasets:
                 # Remove
                 # del self.pos.vertical[(symbol,)[0]]
                 # del self.neg.vertical[(symbol,)[0]]
+                new_all_symbols.append(symbol)
                 if symbol in self.pos.symbols:
                     new_pos[(symbol,)[0]] = self.pos.vertical[(symbol,)[0]]
                 if symbol in self.neg.symbols:
@@ -50,6 +53,7 @@ class Datasets:
         self.neg.vertical = new_neg
         if len(best_unique) == self.bestk.k:
             self.bestk.min_total_support = min_sup
+        self.all_symbols = new_all_symbols
 
 
 class Dataset:
