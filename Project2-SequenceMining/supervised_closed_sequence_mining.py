@@ -2,7 +2,8 @@ import sys
 import random
 random.seed(1998)
 
-epsilon = 10 ** -6
+epsilon = 10 ** -3
+
 
 class Datasets:
     def __init__(self, pos, neg, all_symbols, bestk):
@@ -59,6 +60,27 @@ class Datasets:
         if len(best_unique) == self.bestk.k:
             self.bestk.min_wracc = min_wracc
         self.all_symbols = new_all_symbols
+
+    def post_pruning_closed(self):
+        # Source: stackOverflow
+        def sublist(lst1, lst2):
+            ls1 = [element for element in lst1 if element in lst2]
+            ls2 = [element for element in lst2 if element in lst1]
+            return ls1 == ls2
+        new_bestk = []
+        for that_support, support in self.bestk.best_k:
+            new_that_sup = []
+            for sequence, sup_pos, sup_neg in that_support:
+                is_sublist = False
+                for sequence2, _, _ in that_support:
+                    if len(sequence) < len(sequence2) and not sublist(sequence, sequence2):  # Add sequence
+                        is_sublist = True
+                        break
+                if not is_sublist:
+                    new_that_sup.append((sequence, sup_pos, sup_neg))
+            new_bestk.append((new_that_sup, support))
+        self.bestk.best_k = new_bestk
+
 
 
 class Dataset:
@@ -160,7 +182,9 @@ class BestK:
                 (sequences, support) = self.best_k[i]
                 if support == wacc:
                     # Already an existing
+                    # TODO: Check if subsequence with same support and remove it
                     sequences.append((sequence, support_pos, support_neg))
+                    # self.closing(sequence, support_pos, support_neg, sequences, support)
                     return
             # Not in there
             self.best_k.append(([(sequence, support_pos, support_neg)], wacc))
@@ -172,7 +196,9 @@ class BestK:
                 (sequences, support) = self.best_k[i]
                 if abs(support - wacc) < epsilon:
                     # Already an existing
+                    # TODO: Check if subsequence with same support and remove it
                     sequences.append((sequence, support_pos, support_neg))
+                    # self.closing(sequence, support_pos, support_neg, sequences, support)
                     return
             # Not in there => remove first
             self.best_k.pop(0)
@@ -191,8 +217,23 @@ class BestK:
                 print('[{}]'.format(st), sup_pos, sup_neg, support)
                 pass
 
+    def closing(self, sequence, support_pos, support_neg, sequences, support):
+        # Assume same frequence, just have to check if subsequence and remove it
+        new_sequences = sequences.copy()
+        # sequence, support positive, support negative
+        for (s, sp, sn) in new_sequences:
+            # print(s, sequence[:-1], sequence[1:] == s or sequence[:-1] == s)
+            if len(s) + 1 == len(sequence):  # Could be ? Never Know
+                if all(i in sequence for i in s):  # s is subsequence
+                    # print("Nous faisons un remove de", s, "par", sequence)
+                    sequences.remove((s, sp, sn))
+            elif len(sequence) < len(s):  # Add subset ?
+                if all(i in s for i in sequence):
+                    return  # Not append
+        sequences.append((sequence, support_pos, support_neg))
 
-def Wracc (P,N,p,n):
+
+def Wracc(P, N, p, n):
     return round(((P/(P+N))*(N/(P+N)))*(p/P - n/N), 5)
 
 
@@ -259,9 +300,12 @@ def SPADE(data_pos, data_neg, bestk):
     all_symbols_list = [i for i in all_symbols]
     all_symbols_list.sort()
 
-    dfs([], bestk, Datasets(data_pos, data_neg, all_symbols, bestk), data_pos.vertical, data_neg.vertical)
+    glob = Datasets(data_pos, data_neg, all_symbols, bestk)
+
+    dfs([], bestk, glob, data_pos.vertical, data_neg.vertical)
 
     # Print the result
+    glob.post_pruning_closed()
     bestk.print_bestk()
 
 
@@ -314,6 +358,6 @@ if __name__ == "__main__":
     main()
 
 
-# python3 test.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
-# python3 test.py Datasets/Test/positive.txt Datasets/Test/negative.txt 1
-# python3 test.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
+# python3 supervised_closed_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
+# python3 supervised_closed_sequence_mining.py Datasets/Test/positive.txt Datasets/Test/negative.txt 6
+# python3 supervised_closed_sequence_mining.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
