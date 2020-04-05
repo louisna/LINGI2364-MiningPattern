@@ -253,7 +253,7 @@ def Impurity(P, N, p, n):
     total = imp(P/(N+P))
     total -= ((p+n) / (P+N)) * imp(p/(p+n))
     total -= ((P+N-p-n) / (P+N)) * imp((P-p)/(P+N-p-n))
-    return total
+    return round(total, 5)
 
 
 def projection(added_symbol, bestK, proj):
@@ -340,11 +340,11 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             # Support before projection
             support_pos = count_occurences_symbol(proj_pos, symbol)
             support_neg = count_occurences_symbol(proj_neg, symbol)
-            impurity = Impurity(bestk.P, bestk.N, support_pos, support_neg)
             N = bestk.N
             P = bestk.P
-            threshold_pos = (N + P) * (impurity - imp(P/(N+P)) + imp(P/(P+N-support_neg)))
-            threshold_neg = (N + P) * (impurity - imp(P/(N+P)) + imp((P-support_pos)/(P+N-support_pos)))
+            threshold_pos = (N + P) * (bestk.min_impurity - imp(P/(N+P)) + imp(P/(P+N-support_neg)))
+            threshold_neg = (N + P) * (bestk.min_impurity - imp(P/(N+P)) + imp((P-support_pos)/(P+N-support_pos)))
+            impurity = Impurity(bestk.P, bestk.N, support_pos, support_neg)
             # Threshold set to 0
             if impurity >= bestk.min_impurity or support_pos >= threshold_pos or support_neg >= threshold_neg:
                 # Frequent symbol in this sequence
