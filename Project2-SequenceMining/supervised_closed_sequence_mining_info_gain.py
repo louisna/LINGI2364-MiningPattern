@@ -12,7 +12,7 @@ class Datasets:
         self.neg = neg
         self.all_symbols = [i for i in all_symbols]
         self.bestk = bestk
-        # self.first_pruning()
+        self.first_pruning()
 
     def first_pruning(self):
         best_unique = []
@@ -43,11 +43,13 @@ class Datasets:
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
-            coef = ((self.bestk.P / (self.bestk.P + self.bestk.N)) * (self.bestk.N / (self.bestk.P + self.bestk.N)))
-            threshold = (min_impurity / coef) * self.bestk.P
-            threshold2 = (min_impurity / coef) * self.bestk.N
+            N = self.bestk.N
+            P = self.bestk.P
+            threshold_pos = (N + P) * (self.bestk.min_impurity - imp(P / (N + P)) + imp(P / (P + N - len(sup_neg))))
+            threshold_neg = (N + P) * (
+                        self.bestk.min_impurity - imp(P / (N + P)) + imp((P - len(sup_pos)) / (P + N - len(sup_pos))))
             if Impurity(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= min_impurity or len(
-                    sup_pos) >= threshold or len(sup_neg) >= threshold2:
+                    sup_pos) >= threshold_pos or len(sup_neg) >= threshold_neg:
                 new_all_symbols.append(symbol)
 
                 # Remove
@@ -78,15 +80,17 @@ class Datasets:
             new_that_sup = []
             for sequence, sup_pos, sup_neg in that_support:
                 is_sublist = False
-                for sequence2, _, _ in that_support:
-                    if len(sequence) < len(sequence2) and sublist(sequence, sequence2):  # Add sequence
-                        is_sublist = True
+                for that_support2, support2 in self.bestk.best_k:
+                    for sequence2, sup_pos2, sup_neg2 in that_support2:
+                        if len(sequence) < len(sequence2) and sublist(sequence, sequence2) and sup_pos == sup_pos2 and sup_neg == sup_neg2:  # Add sequence
+                            is_sublist = True
+                            break
+                    if is_sublist:
                         break
                 if not is_sublist:
                     new_that_sup.append((sequence, sup_pos, sup_neg))
             new_bestk.append((new_that_sup, support))
         self.bestk.best_k = new_bestk
-
 
 
 class Dataset:
@@ -188,9 +192,8 @@ class BestK:
                 (sequences, support) = self.best_k[i]
                 if support == impurity:
                     # Already an existing
-                    # TODO: Check if subsequence with same support and remove it
+                    # sequences.append((sequence, support_pos, support_neg))
                     sequences.append((sequence, support_pos, support_neg))
-                    # self.closing(sequence, support_pos, support_neg, sequences, support)
                     return
             # Not in there
             self.best_k.append(([(sequence, support_pos, support_neg)], impurity))
@@ -202,9 +205,8 @@ class BestK:
                 (sequences, support) = self.best_k[i]
                 if abs(support - impurity) < epsilon:
                     # Already an existing
-                    # TODO: Check if subsequence with same support and remove it
                     sequences.append((sequence, support_pos, support_neg))
-                    # self.closing(sequence, support_pos, support_neg, sequences, support)
+                    # self.closing(sequence, support_pos, support_neg)
                     return
             # Not in there => remove first
             self.best_k.pop(0)
@@ -223,20 +225,30 @@ class BestK:
                 print('[{}]'.format(st), sup_pos, sup_neg, support)
                 pass
 
-    def closing(self, sequence, support_pos, support_neg, sequences, support):
-        # Assume same frequence, just have to check if subsequence and remove it
-        new_sequences = sequences.copy()
-        # sequence, support positive, support negative
-        for (s, sp, sn) in new_sequences:
-            # print(s, sequence[:-1], sequence[1:] == s or sequence[:-1] == s)
-            if len(s) + 1 == len(sequence):  # Could be ? Never Know
-                if all(i in sequence for i in s):  # s is subsequence
-                    # print("Nous faisons un remove de", s, "par", sequence)
-                    sequences.remove((s, sp, sn))
-            elif len(sequence) < len(s):  # Add subset ?
-                if all(i in s for i in sequence):
-                    return  # Not append
-        sequences.append((sequence, support_pos, support_neg))
+    def closing(self, sequence, support_pos, support_neg):
+        # This is a decorator (private joke)
+        def sublist(lst1, lst2):
+            index = 0
+            for i in lst2:
+                if i == lst1[index]:
+                    index += 1
+                if index == len(lst1):
+                    return True
+            return False
+
+        if sequence == ['B']:
+            print('ici')
+
+        for that_support, support in self.best_k:
+            for s, supp, supn in that_support:
+                if sequence == ['B']:
+                    print('la')
+                if len(sequence) < len(s) and support_pos == supp and support_neg == supn and sublist(sequence, s):
+                    if sequence == ['B']:
+                        print('iciLa')
+                    return False
+        # sequences.append((sequence, support_pos, support_neg))
+        return True
 
 
 def imp(x):

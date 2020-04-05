@@ -72,14 +72,19 @@ class Datasets:
                 if index == len(lst1):
                     return True
             return False
+
         new_bestk = []
         for that_support, support in self.bestk.best_k:
             new_that_sup = []
             for sequence, sup_pos, sup_neg in that_support:
                 is_sublist = False
-                for sequence2, _, _ in that_support:
-                    if len(sequence) < len(sequence2) and sublist(sequence, sequence2):  # Add sequence
-                        is_sublist = True
+                for that_support2, support2 in self.bestk.best_k:
+                    for sequence2, sup_pos2, sup_neg2 in that_support2:
+                        if len(sequence) < len(sequence2) and sublist(sequence,
+                                                                      sequence2) and sup_pos == sup_pos2 and sup_neg == sup_neg2:  # Add sequence
+                            is_sublist = True
+                            break
+                    if is_sublist:
                         break
                 if not is_sublist:
                     new_that_sup.append((sequence, sup_pos, sup_neg))
