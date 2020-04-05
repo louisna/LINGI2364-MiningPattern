@@ -1,5 +1,6 @@
 import sys
 import random
+import math
 random.seed(1998)
 
 epsilon = 10 ** -5
@@ -11,31 +12,31 @@ class Datasets:
         self.neg = neg
         self.all_symbols = [i for i in all_symbols]
         self.bestk = bestk
-        self.first_pruning()
+        # self.first_pruning()
 
     def first_pruning(self):
         best_unique = []
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
-            wracc = Wracc(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg))
-            min_wracc = sys.maxsize
+            impurity = Impurity(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg))
+            min_impurity = sys.maxsize
             in_list = False
             if len(best_unique) < self.bestk.k:
-                best_unique.append(wracc)
+                best_unique.append(impurity)
             else:
                 for s in best_unique:
-                    if s == wracc:
+                    if s == impurity:
                         in_list = True
-                    min_wracc = min(min_wracc, s)
-                if not in_list and min_wracc < wracc:
-                    best_unique.remove(min_wracc)
-                    best_unique.append(wracc)
+                    min_impurity = min(min_impurity, s)
+                if not in_list and min_impurity < impurity:
+                    best_unique.remove(min_impurity)
+                    best_unique.append(impurity)
 
         new_pos = dict()
         new_neg = dict()
 
-        min_wracc = min(best_unique)
+        min_impurity = min(best_unique)
 
         new_all_symbols = []
 
@@ -43,9 +44,10 @@ class Datasets:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
             coef = ((self.bestk.P / (self.bestk.P + self.bestk.N)) * (self.bestk.N / (self.bestk.P + self.bestk.N)))
-            threshold = (min_wracc / coef) * self.bestk.P
-            if Wracc(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= min_wracc or len(
-                    sup_pos) >= threshold:
+            threshold = (min_impurity / coef) * self.bestk.P
+            threshold2 = (min_impurity / coef) * self.bestk.N
+            if Impurity(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= min_impurity or len(
+                    sup_pos) >= threshold or len(sup_neg) >= threshold2:
                 new_all_symbols.append(symbol)
 
                 # Remove
@@ -58,7 +60,7 @@ class Datasets:
         self.pos.vertical = new_pos
         self.neg.vertical = new_neg
         if len(best_unique) == self.bestk.k:
-            self.bestk.min_wracc = min_wracc
+            self.bestk.min_impurity = min_impurity
         self.all_symbols = new_all_symbols
 
     def post_pruning_closed(self):
@@ -172,33 +174,33 @@ class BestK:
     def __init__(self, k, P, N):
         self.k = k
         self.best_k = []
-        self.min_Wracc = 0
+        self.min_impurity = 0
         self.P = P
         self.N = N
 
     def add_frequent(self, sequence, support_pos, support_neg):
-        wacc = Wracc(self.P, self.N, support_pos, support_neg)
-        if wacc < self.min_Wracc:
+        impurity = Impurity(self.P, self.N, support_pos, support_neg)
+        if impurity < self.min_impurity:
             return
         if len(self.best_k) < self.k:
             # Not full
             for i in range(len(self.best_k)):
                 (sequences, support) = self.best_k[i]
-                if support == wacc:
+                if support == impurity:
                     # Already an existing
                     # TODO: Check if subsequence with same support and remove it
                     sequences.append((sequence, support_pos, support_neg))
                     # self.closing(sequence, support_pos, support_neg, sequences, support)
                     return
             # Not in there
-            self.best_k.append(([(sequence, support_pos, support_neg)], wacc))
+            self.best_k.append(([(sequence, support_pos, support_neg)], impurity))
             self.best_k.sort(key=lambda b: b[1])
         else:  # Full
 
             # Check if this min support is already there
             for i in range(len(self.best_k)):
                 (sequences, support) = self.best_k[i]
-                if abs(support - wacc) < epsilon:
+                if abs(support - impurity) < epsilon:
                     # Already an existing
                     # TODO: Check if subsequence with same support and remove it
                     sequences.append((sequence, support_pos, support_neg))
@@ -206,10 +208,10 @@ class BestK:
                     return
             # Not in there => remove first
             self.best_k.pop(0)
-            self.best_k.append(([(sequence, support_pos, support_neg)], wacc))
+            self.best_k.append(([(sequence, support_pos, support_neg)], impurity))
             self.best_k.sort(key=lambda b: b[1])
 
-            self.min_Wracc = self.best_k[0][1]
+            self.min_impurity = self.best_k[0][1]
 
     def print_bestk(self):
         for that_support, support in self.best_k:
@@ -237,8 +239,21 @@ class BestK:
         sequences.append((sequence, support_pos, support_neg))
 
 
-def Wracc(P, N, p, n):
-    return round(((P/(P+N))*(N/(P+N)))*(p/P - n/N), 5)
+def imp(x):
+    if x == 0 or x == 1:
+        return 0
+    return -x * math.log(x, 2) - (1-x) * math.log(1-x, 2)
+
+
+def Impurity(P, N, p, n):
+    if P + N == p + n:
+        return 0
+    if p + n == 0:
+        return 0
+    total = imp(P/(N+P))
+    total -= ((p+n) / (P+N)) * imp(p/(p+n))
+    total -= ((P+N-p-n) / (P+N)) * imp((P-p)/(P+N-p-n))
+    return total
 
 
 def projection(added_symbol, bestK, proj):
@@ -325,11 +340,14 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             # Support before projection
             support_pos = count_occurences_symbol(proj_pos, symbol)
             support_neg = count_occurences_symbol(proj_neg, symbol)
-            coef = ((bestk.P / (bestk.P + bestk.N)) * (bestk.N / (bestk.P + bestk.N)))
-            threshold = (bestk.min_Wracc / coef) * bestk.P
+            impurity = Impurity(bestk.P, bestk.N, support_pos, support_neg)
+            N = bestk.N
+            P = bestk.P
+            threshold_pos = (N + P) * (impurity - imp(P/(N+P)) + imp(P/(P+N-support_neg)))
+            threshold_neg = (N + P) * (impurity - imp(P/(N+P)) + imp((P-support_pos)/(P+N-support_pos)))
             # Threshold set to 0
-            if Wracc(bestk.P, bestk.N, support_pos,
-                     support_neg) >= bestk.min_Wracc or support_pos >= threshold:  # Frequent symbol in this sequence
+            if impurity >= bestk.min_impurity or support_pos >= threshold_pos or support_neg >= threshold_neg:
+                # Frequent symbol in this sequence
                 new_pos = projection(symbol, bestk, proj_pos)
                 new_neg = projection(symbol, bestk, proj_neg)
 
@@ -362,6 +380,6 @@ if __name__ == "__main__":
     main()
 
 
-# python3 supervised_closed_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
-# python3 supervised_closed_sequence_mining.py Datasets/Test/positive.txt Datasets/Test/negative.txt 6
-# python3 supervised_closed_sequence_mining.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
+# python3 supervised_closed_sequence_mining_info_gain.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
+# python3 supervised_closed_sequence_mining_info_gain.py Datasets/Test/positive.txt Datasets/Test/negative.txt 6
+# python3 supervised_closed_sequence_mining_info_gain.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1

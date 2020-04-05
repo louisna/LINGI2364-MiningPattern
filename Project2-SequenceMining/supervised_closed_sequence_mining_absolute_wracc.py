@@ -44,8 +44,9 @@ class Datasets:
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
             coef = ((self.bestk.P / (self.bestk.P + self.bestk.N)) * (self.bestk.N / (self.bestk.P + self.bestk.N)))
             threshold = (min_wracc / coef) * self.bestk.P
+            threshold2 = (min_wracc / coef) * self.bestk.N
             if Wracc(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= min_wracc or len(
-                    sup_pos) >= threshold:
+                    sup_pos) >= threshold or len(sup_neg) >= threshold2:
                 new_all_symbols.append(symbol)
 
                 # Remove
@@ -238,7 +239,7 @@ class BestK:
 
 
 def Wracc(P, N, p, n):
-    return round(((P/(P+N))*(N/(P+N)))*(p/P - n/N), 5)
+    return abs(round(((P/(P+N))*(N/(P+N)))*(p/P - n/N), 5))
 
 
 def projection(added_symbol, bestK, proj):
@@ -326,10 +327,13 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             support_pos = count_occurences_symbol(proj_pos, symbol)
             support_neg = count_occurences_symbol(proj_neg, symbol)
             coef = ((bestk.P / (bestk.P + bestk.N)) * (bestk.N / (bestk.P + bestk.N)))
-            threshold = (bestk.min_Wracc / coef) * bestk.P
+            threshold_pos = (bestk.min_Wracc / coef) * bestk.P
+            threshold_neg = (bestk.min_Wracc / coef) * bestk.N
             # Threshold set to 0
-            if Wracc(bestk.P, bestk.N, support_pos,
-                     support_neg) >= bestk.min_Wracc or support_pos >= threshold:  # Frequent symbol in this sequence
+            wracc = Wracc(bestk.P, bestk.N, support_pos,
+                     support_neg)
+            if wracc >= bestk.min_Wracc or support_pos >= threshold_pos or support_neg >= threshold_neg:
+                # Frequent symbol in this sequence
                 new_pos = projection(symbol, bestk, proj_pos)
                 new_neg = projection(symbol, bestk, proj_neg)
 
@@ -362,6 +366,6 @@ if __name__ == "__main__":
     main()
 
 
-# python3 supervised_closed_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
-# python3 supervised_closed_sequence_mining.py Datasets/Test/positive.txt Datasets/Test/negative.txt 6
-# python3 supervised_closed_sequence_mining.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
+# python3 supervised_closed_sequence_mining_absolute_wracc.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
+# python3 supervised_closed_sequence_mining_absolute_wracc.py Datasets/Test/positive.txt Datasets/Test/negative.txt 6
+# python3 supervised_closed_sequence_mining_absolute_wracc.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
