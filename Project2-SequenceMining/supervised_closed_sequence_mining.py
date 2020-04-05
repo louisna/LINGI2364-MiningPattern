@@ -2,7 +2,7 @@ import sys
 import random
 random.seed(1998)
 
-epsilon = 10 ** -3
+epsilon = 10 ** -5
 
 
 class Datasets:
@@ -62,18 +62,22 @@ class Datasets:
         self.all_symbols = new_all_symbols
 
     def post_pruning_closed(self):
-        # Source: stackOverflow
+        # This is a decorator (private joke)
         def sublist(lst1, lst2):
-            ls1 = [element for element in lst1 if element in lst2]
-            ls2 = [element for element in lst2 if element in lst1]
-            return ls1 == ls2
+            index = 0
+            for i in lst2:
+                if i == lst1[index]:
+                    index += 1
+                if index == len(lst1):
+                    return True
+            return False
         new_bestk = []
         for that_support, support in self.bestk.best_k:
             new_that_sup = []
             for sequence, sup_pos, sup_neg in that_support:
                 is_sublist = False
                 for sequence2, _, _ in that_support:
-                    if len(sequence) < len(sequence2) and not sublist(sequence, sequence2):  # Add sequence
+                    if len(sequence) < len(sequence2) and sublist(sequence, sequence2):  # Add sequence
                         is_sublist = True
                         break
                 if not is_sublist:
