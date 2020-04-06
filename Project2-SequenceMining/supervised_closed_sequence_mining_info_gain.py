@@ -250,11 +250,17 @@ class BestK:
         # sequences.append((sequence, support_pos, support_neg))
         return True
 
-
+entropy = True
 def imp(x):
-    if x == 0 or x == 1:
-        return 0
-    return -x * math.log(x, 2) - (1-x) * math.log(1-x, 2)
+    if entropy: # Entropy
+        if x == 0 or x == 1:
+            return 0
+        return -x * math.log(x, 2) - (1-x) * math.log(1-x, 2)
+    else: # Gini
+        if x == 0 or x == 1:
+            return 0
+        return x * (1-x)
+
 
 
 def Impurity(P, N, p, n):
