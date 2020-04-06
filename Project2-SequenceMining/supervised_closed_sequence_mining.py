@@ -58,7 +58,7 @@ class Datasets:
         self.pos.vertical = new_pos
         self.neg.vertical = new_neg
         if len(best_unique) == self.bestk.k:
-            self.bestk.min_wracc = min_wracc
+            self.bestk.min_Wracc = min_wracc
         self.all_symbols = new_all_symbols
 
     def post_pruning_closed(self):
