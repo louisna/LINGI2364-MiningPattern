@@ -45,13 +45,16 @@ class Datasets:
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
             N = self.bestk.N
             P = self.bestk.P
-            threshold_pos = (N + P) * (self.bestk.min_impurity - imp(P / (N + P)) + imp(P / (P + N - len(sup_neg))))
-            threshold_neg = (N + P) * (
-                        self.bestk.min_impurity - imp(P / (N + P)) + imp((P - len(sup_pos)) / (P + N - len(sup_pos))))
-            if Impurity(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= min_impurity or len(
-                    sup_pos) >= threshold_pos or len(sup_neg) >= threshold_neg:
+            if imp(P/(P+N-len(sup_neg))) == 0:
+                threshold_neg = 0
+            else:
+                threshold_neg = ((N + P)/imp(P/(P+N-len(sup_neg)))) * (self.bestk.min_impurity - imp(P / (N + P)) + imp(P / (P + N - len(sup_neg))))
+            if imp((P-len(sup_pos))/(P+N-len(sup_pos))) == 0:
+                threshold_pos = 0
+            else:
+                threshold_pos = ((N + P)/imp((P-len(sup_pos))/(P+N-len(sup_pos)))) * (self.bestk.min_impurity - imp(P / (N + P)) + imp((P - len(sup_pos)) / (P + N - len(sup_pos))))
+            if Impurity(self.bestk.P, self.bestk.N, len(sup_pos), len(sup_neg)) >= min_impurity or len(sup_pos) >= threshold_pos or len(sup_neg) >= threshold_neg:
                 new_all_symbols.append(symbol)
-
                 # Remove
                 # del self.pos.vertical[(symbol,)[0]]
                 # del self.neg.vertical[(symbol,)[0]]
@@ -360,8 +363,14 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             support_neg = count_occurences_symbol(proj_neg, symbol)
             N = bestk.N
             P = bestk.P
-            threshold_pos = (N + P) * (bestk.min_impurity - imp(P/(N+P)) + imp(P/(P+N-support_neg)))
-            threshold_neg = (N + P) * (bestk.min_impurity - imp(P/(N+P)) + imp((P-support_pos)/(P+N-support_pos)))
+            if imp(P/(P+N-support_neg)) == 0:
+                threshold_neg = 0
+            else:
+                threshold_neg = ((N + P)/imp(P/(P+N-support_neg))) * (bestk.min_impurity - imp(P/(N+P)) + imp(P/(P+N-support_neg)))
+            if imp((P-support_pos)/(P+N-support_pos)) == 0:
+                threshold_pos = 0
+            else:
+                threshold_pos = ((N + P)/imp((P-support_pos)/(P+N-support_pos))) * (bestk.min_impurity - imp(P/(N+P)) + imp((P-support_pos)/(P+N-support_pos)))
             impurity = Impurity(bestk.P, bestk.N, support_pos, support_neg)
             # Threshold set to 0
             if impurity >= bestk.min_impurity or support_pos >= threshold_pos or support_neg >= threshold_neg:
