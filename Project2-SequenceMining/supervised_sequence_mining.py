@@ -57,7 +57,7 @@ class Datasets:
         self.pos.vertical = new_pos
         self.neg.vertical = new_neg
         if len(best_unique) == self.bestk.k:
-            self.bestk.min_wracc = min_wracc
+            self.bestk.min_Wracc = min_wracc
         self.all_symbols = new_all_symbols
 
 
@@ -314,6 +314,6 @@ if __name__ == "__main__":
     main()
 
 
-# python3 test.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
-# python3 test.py Datasets/Test/positive.txt Datasets/Test/negative.txt 1
-# python3 test.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
+# python3 supervised_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
+# python3 supervised_sequence_mining.py Datasets/Test/positive.txt Datasets/Test/negative.txt 1
+# python3 supervised_sequence_mining.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1
