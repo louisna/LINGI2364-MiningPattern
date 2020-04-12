@@ -1,6 +1,7 @@
 import sys
 import random
 import math
+import time
 random.seed(1998)
 
 epsilon = 10 ** -5
@@ -398,6 +399,16 @@ def main():
     bestk = BestK(k, data_pos.trans_num(), data_neg.trans_num())
 
     SPADE(data_pos, data_neg, bestk)
+
+
+def performance(pos_file, neg_file, k):
+    data_pos = Dataset(pos_file)
+    data_neg = Dataset(neg_file)
+    bestk = BestK(k, data_pos.trans_num(), data_neg.trans_num())
+
+    a = time.time()
+    SPADE(data_pos, data_neg, bestk)
+    return time.time() - a
 
 
 if __name__ == "__main__":
