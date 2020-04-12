@@ -144,7 +144,7 @@ def zone_scoring_function_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", n
     plt.legend(loc="upper left")
     plt.xlabel("N space")
     plt.ylabel("P space")
-    plt.title("ROC analysis for the Wacc scoring function and k=" + str(k))
+    plt.title("ROC analysis for the Wracc scoring function and k=" + str(k))
     plt.savefig("ROC_wracc.svg")
 
     plt.show()
@@ -165,7 +165,7 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
             max_y = max(max_y, pos)
     P = a.P
     N = a.N
-    score = a.min_Wacc
+    score = a.min_impurity
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
@@ -203,14 +203,14 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
     plt.legend()
     plt.xlabel("N space")
     plt.ylabel("P space")
-    plt.title("ROC analysis for the Wacc scoring function and k=" + str(k))
+    plt.title("ROC analysis for the Information Gain scoring function and k=" + str(k))
     plt.savefig("ROC_info.svg")
 
     plt.show()
 
 
 def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
-    a = wacc.zone_analysis(pos_file, neg_file, k)
+    a = abs_wracc.zone_analysis(pos_file, neg_file, k)
 
     o_x = []
     o_y = []
@@ -224,12 +224,11 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
             max_y = max(max_y, pos)
     P = a.P
     N = a.N
-    score = a.min_Wacc
+    score = a.min_Wracc
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
 
-    # TODO
     # Compute the limit of the scoring function
     x = list(range(max_x + round(max_x*0.1)))
     cst = (P / (N + P)) * (N / (P + N))
@@ -245,10 +244,9 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
     # Fill area below the scoring function
     plt.fill_between(x, y2, color='C1', alpha=0.3)
 
-    # TODO
     # Compute the height and the width of the pruning zone
-    height = 1
-    width = 1
+    height = score * P / cst
+    width = score * N / cst
 
     # Plot the rectangle of the pruning zone
     rect = plt.Rectangle((0, 0), width, height, color="C2", alpha=0.3)
@@ -265,7 +263,7 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
     plt.legend()
     plt.xlabel("N space")
     plt.ylabel("P space")
-    plt.title("ROC analysis for the Wacc scoring function and k=" + str(k))
+    plt.title("ROC analysis for the Absolute Wracc scoring function and k=" + str(k))
     plt.savefig("ROC_abs_wracc.svg")
 
     plt.show()
@@ -273,6 +271,6 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
 
 if __name__ == "__main__":
     # execution_time_analysis(max_k=21)
-    # zone_scoring_function_wacc()
+    zone_scoring_function_wacc()
     # zone_scoring_function_wracc()
-    zone_scoring_function_absolute_wracc()
+    # zone_scoring_function_absolute_wracc()
