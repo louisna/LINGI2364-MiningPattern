@@ -371,6 +371,15 @@ def performance(pos_file, neg_file, k):
     return time.time() - a
 
 
+def zone_analysis(pos_file, neg_file, k):
+    data_pos = Dataset(pos_file)
+    data_neg = Dataset(neg_file)
+    bestk = BestK(k, data_pos.trans_num(), data_neg.trans_num())
+
+    SPADE(data_pos, data_neg, bestk)
+    return bestk
+
+
 if __name__ == "__main__":
     main()
 
