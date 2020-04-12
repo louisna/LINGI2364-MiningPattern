@@ -377,7 +377,7 @@ def zone_analysis(pos_file, neg_file, k):
     bestk = BestK(k, data_pos.trans_num(), data_neg.trans_num())
 
     SPADE(data_pos, data_neg, bestk)
-    return bestk.best_k
+    return bestk
 
 if __name__ == "__main__":
     main()

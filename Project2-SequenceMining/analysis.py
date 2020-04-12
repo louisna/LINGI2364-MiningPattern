@@ -65,7 +65,7 @@ def zone_scoring_function_wacc(k=15, pos_file="Datasets/Protein/SRC1521.txt", ne
     plt.plot(x, y1, color="C1", label="Scoring function")
     plt.plot(x, y2, color="C1")
     # Fill area above the scoring function
-    plt.fill_between(x, y1, max(y1), color='C1', alpha=0.3)
+    plt.fill_between(x, y1, max_y+5, color='C1', alpha=0.3)
     # Fill area below the scoring function
     plt.fill_between(x, y2, color='C1', alpha=0.3)
 
@@ -109,28 +109,25 @@ def zone_scoring_function_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", n
             max_y = max(max_y, pos)
     P = a.P
     N = a.N
-    score = a.min_Wacc
+    score = a.min_Wracc
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
 
-    # TODO
     # Compute the limit of the scoring function
     x = list(range(max_x + round(max_x*0.1)))
-    y1 = [(score + i/N) * P for i in x]
-    y2 = [(-score + i/N) * P for i in x]
+    cst = (P/(N+P)) * (N/(P+N))
+    y = [((score/cst) + (i/N))*P for i in x]
     # Plot the scoring function
-    plt.plot(x, y1, color="C1", label="Scoring function")
-    plt.plot(x, y2, color="C1")
+    plt.plot(x, y, color="C1", label="Scoring function")
     # Fill area above the scoring function
-    plt.fill_between(x, y1, max(y1), color='C1', alpha=0.3)
+    plt.fill_between(x, y, max_y+5, color='C1', alpha=0.3)
     # Fill area below the scoring function
-    plt.fill_between(x, y2, color='C1', alpha=0.3)
+    # plt.fill_between(x, y2, color='C1', alpha=0.3)
 
-    # TODO
     # Compute the height and the width of the pruning zone
-    height = score * P
-    width = score * N
+    height = score * P / cst
+    width = max_x*2
 
     # Plot the rectangle of the pruning zone
     rect = plt.Rectangle((0, 0), width, height, color="C2", alpha=0.3)
@@ -144,11 +141,11 @@ def zone_scoring_function_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", n
     plt.ylim(bottom=0, top=max_y+5)
     plt.xlim(left=0, right=max_x+5)
 
-    plt.legend()
+    plt.legend(loc="upper left")
     plt.xlabel("N space")
     plt.ylabel("P space")
     plt.title("ROC analysis for the Wacc scoring function and k=" + str(k))
-    plt.savefig("ROC_wacc.svg")
+    plt.savefig("ROC_wracc.svg")
 
     plt.show()
 
@@ -182,7 +179,7 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
     plt.plot(x, y1, color="C1", label="Scoring function")
     plt.plot(x, y2, color="C1")
     # Fill area above the scoring function
-    plt.fill_between(x, y1, max(y1), color='C1', alpha=0.3)
+    plt.fill_between(x, y1, max_y+5, color='C1', alpha=0.3)
     # Fill area below the scoring function
     plt.fill_between(x, y2, color='C1', alpha=0.3)
 
@@ -207,7 +204,7 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
     plt.xlabel("N space")
     plt.ylabel("P space")
     plt.title("ROC analysis for the Wacc scoring function and k=" + str(k))
-    plt.savefig("ROC_wacc.svg")
+    plt.savefig("ROC_info.svg")
 
     plt.show()
 
@@ -235,20 +232,23 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
     # TODO
     # Compute the limit of the scoring function
     x = list(range(max_x + round(max_x*0.1)))
-    y1 = [(score + i/N) * P for i in x]
-    y2 = [(-score + i/N) * P for i in x]
+    cst = (P / (N + P)) * (N / (P + N))
+    y1 = [((score / cst) + (i / N)) * P for i in x]
+    y2 = [((-score / cst) + (i / N)) * P for i in x]
+    print('--------')
+    print(y1)
     # Plot the scoring function
     plt.plot(x, y1, color="C1", label="Scoring function")
     plt.plot(x, y2, color="C1")
     # Fill area above the scoring function
-    plt.fill_between(x, y1, max(y1), color='C1', alpha=0.3)
+    plt.fill_between(x, y1, max_y+5, color='C1', alpha=0.3)
     # Fill area below the scoring function
     plt.fill_between(x, y2, color='C1', alpha=0.3)
 
     # TODO
     # Compute the height and the width of the pruning zone
-    height = score * P
-    width = score * N
+    height = 1
+    width = 1
 
     # Plot the rectangle of the pruning zone
     rect = plt.Rectangle((0, 0), width, height, color="C2", alpha=0.3)
@@ -266,11 +266,13 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
     plt.xlabel("N space")
     plt.ylabel("P space")
     plt.title("ROC analysis for the Wacc scoring function and k=" + str(k))
-    plt.savefig("ROC_wacc.svg")
+    plt.savefig("ROC_abs_wracc.svg")
 
     plt.show()
 
 
 if __name__ == "__main__":
     # execution_time_analysis(max_k=21)
-    zone_scoring_function_wacc()
+    # zone_scoring_function_wacc()
+    # zone_scoring_function_wracc()
+    zone_scoring_function_absolute_wracc()
