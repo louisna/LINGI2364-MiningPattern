@@ -95,7 +95,6 @@ def zone_scoring_function_wacc(k=15, pos_file="Datasets/Protein/SRC1521.txt", ne
 
 
 def zone_scoring_function_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
-    # TODO
     a = wracc.zone_analysis(pos_file, neg_file, k)
 
     o_x = []
@@ -155,7 +154,6 @@ def zone_scoring_function_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", n
 
 
 def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
-    # TODO
     a = info.zone_analysis(pos_file, neg_file, k)
 
     o_x = []
@@ -215,7 +213,6 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
 
 
 def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
-    # TODO
     a = wacc.zone_analysis(pos_file, neg_file, k)
 
     o_x = []
