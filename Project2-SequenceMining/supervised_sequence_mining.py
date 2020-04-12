@@ -314,6 +314,6 @@ if __name__ == "__main__":
     main()
 
 
-# python3 supervised_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 6
+# python3 supervised_sequence_mining.py Datasets/Protein/PKA_group15.txt Datasets/Protein/SRC1521.txt 8
 # python3 supervised_sequence_mining.py Datasets/Test/positive.txt Datasets/Test/negative.txt 1
 # python3 supervised_sequence_mining.py Datasets/Reuters/earn.txt Datasets/Reuters/acq.txt 1

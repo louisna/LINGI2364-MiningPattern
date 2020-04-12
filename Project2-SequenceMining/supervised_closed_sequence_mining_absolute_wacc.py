@@ -75,13 +75,10 @@ class Datasets:
             new_that_sup = []
             for sequence, sup_pos, sup_neg in that_support:
                 is_sublist = False
-                for that_support2, support2 in self.bestk.best_k:
-                    for sequence2, sup_pos2, sup_neg2 in that_support2:
-                        if len(sequence) < len(sequence2) and sublist(sequence,
-                                                                      sequence2) and sup_pos == sup_pos2 and sup_neg == sup_neg2:  # Add sequence
-                            is_sublist = True
-                            break
-                    if is_sublist:
+                for sequence2, sup_pos2, sup_neg2 in that_support:
+                    if len(sequence) < len(sequence2) and sublist(sequence,
+                                                                  sequence2) and sup_pos == sup_pos2 and sup_neg == sup_neg2:  # Add sequence
+                        is_sublist = True
                         break
                 if not is_sublist:
                     new_that_sup.append((sequence, sup_pos, sup_neg))
