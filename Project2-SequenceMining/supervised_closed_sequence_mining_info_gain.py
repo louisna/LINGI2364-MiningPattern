@@ -254,7 +254,7 @@ class BestK:
 entropy = True
 def imp(x):
     if entropy: # Entropy
-        if x == 0 or x == 1:
+        if x <= 0 or x >= 1:
             return 0
         return -x * math.log(x, 2) - (1-x) * math.log(1-x, 2)
     else: # Gini

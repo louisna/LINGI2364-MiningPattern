@@ -349,6 +349,13 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
     # if sequence == ["C"]:
     #    print("passage FIN")
 
+def zone_analysis(pos_file, neg_file, k):
+    data_pos = Dataset(pos_file)
+    data_neg = Dataset(neg_file)
+    bestk = BestK(k, data_pos.trans_num(), data_neg.trans_num())
+
+    SPADE(data_pos, data_neg, bestk)
+    return bestk
 
 def main():
     pos_filepath = sys.argv[1]  # filepath to positive class file

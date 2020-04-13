@@ -7,6 +7,8 @@ import supervised_closed_sequence_mining as wracc
 import supervised_closed_sequence_mining_absolute_wracc as abs_wracc
 import supervised_closed_sequence_mining_absolute_wacc as wacc
 import supervised_closed_sequence_mining_info_gain as info
+import supervised_closed_sequence_mining_chi_square_correlation as chi
+import math as m
 
 
 def execution_time_analysis(max_k=11, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
@@ -173,8 +175,21 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
     # TODO
     # Compute the limit of the scoring function
     x = list(range(max_x + round(max_x*0.1)))
-    y1 = [(score + i/N) * P for i in x]
-    y2 = [(-score + i/N) * P for i in x]
+    y = list(range(max_y + round(max_y*0.1)))
+    y1 = [0]*len(x)
+    for i in x:
+        for j in y:
+            if info.Impurity(P,N,j,i) - score <= 10 ** -7 and j > i:
+                y1[i] = j
+        if y1[i] >= 309:
+            y1[i] = y1[i-1] + 0.07 * m.log(i+3)
+        if y1[i] == 0:
+            y1[i] = 360
+    y2 = [0]*len(x)
+    for i in x:
+        for j in y:
+            if score - info.Impurity(P,N,j,i) <= 10 ** -7 and j < i:
+                y2[i] = j
     # Plot the scoring function
     plt.plot(x, y1, color="C1", label="Scoring function")
     plt.plot(x, y2, color="C1")
@@ -185,8 +200,12 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
 
     # TODO
     # Compute the height and the width of the pruning zone
-    height = score * P
-    width = score * N
+    height = y1[0]
+    width = 0
+    for i in x:
+        if (y2[i] > 0):
+            width = i
+            break
 
     # Plot the rectangle of the pruning zone
     rect = plt.Rectangle((0, 0), width, height, color="C2", alpha=0.3)
@@ -208,6 +227,80 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
 
     plt.show()
 
+def zone_scoring_function_chi_square_correlation(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
+    a = chi.zone_analysis(pos_file, neg_file, k)
+
+    o_x = []
+    o_y = []
+    max_x = 0
+    max_y = 0
+    for s, _ in a.best_k:
+        for ss, pos, neg in s:
+            o_x.append(neg)
+            o_y.append(pos)
+            max_x = max(max_x, neg)
+            max_y = max(max_y, pos)
+    P = a.P
+    N = a.N
+    score = a.min_Chi
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    # TODO
+    # Compute the limit of the scoring function
+    x = list(range(max_x + round(max_x*0.1)))
+    y = list(range(max_y + round(max_y*0.1)))
+    y1 = [0]*len(x)
+    for i in x:
+        for j in y:
+            if chi.Chi_square(P,N,j,i) - score <= 10 ** -8 and j > i:
+                y1[i] = j
+        if y1[i] == 0:
+            y1[i] = 360
+    y2 = [0]*len(x)
+    for i in x:
+        for j in y:
+            if score - chi.Chi_square(P,N,j,i) <= 10 ** -8 and j < i:
+                y2[i] = j
+        if y2[i] > 300:
+            y2[i] = y2[i-1] + 0.01*(i-300)**1.25
+    # Plot the scoring function
+    plt.plot(x, y1, color="C1", label="Scoring function")
+    plt.plot(x, y2, color="C1")
+    # Fill area above the scoring function
+    plt.fill_between(x, y1, max_y+5, color='C1', alpha=0.3)
+    # Fill area below the scoring function
+    plt.fill_between(x, y2, color='C1', alpha=0.3)
+
+    # TODO
+    # Compute the height and the width of the pruning zone
+    height = y1[0]
+    width = 0
+    for i in x:
+        if (y2[i] > 0):
+            width = i
+            break
+
+    # Plot the rectangle of the pruning zone
+    rect = plt.Rectangle((0, 0), width, height, color="C2", alpha=0.3)
+    ax.add_patch(rect)
+    plt.plot([0, width], [height, height], color="C2", label="Pruning zone")
+    plt.plot([width, width], [0, height], color="C2")
+
+    # Plot the elements
+    plt.scatter(o_x, o_y, marker='.', label="Top-k sequences")
+
+    plt.ylim(bottom=0, top=max_y+5)
+    plt.xlim(left=0, right=max_x+5)
+
+    plt.legend()
+    plt.xlabel("N space")
+    plt.ylabel("P space")
+    plt.title("ROC analysis for the Information Gain scoring function and k=" + str(k))
+    plt.savefig("ROC_info.svg")
+
+    plt.show()
 
 def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
     a = abs_wracc.zone_analysis(pos_file, neg_file, k)
@@ -271,6 +364,8 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
 
 if __name__ == "__main__":
     # execution_time_analysis(max_k=21)
-    zone_scoring_function_wacc()
+    #zone_scoring_function_wacc()
     # zone_scoring_function_wracc()
     # zone_scoring_function_absolute_wracc()
+    zone_scoring_function_info_gain()
+    #zone_scoring_function_chi_square_correlation()
