@@ -12,11 +12,11 @@ class Datasets:
         self.neg = neg
         self.all_symbols = [i for i in all_symbols]
         self.bestk = bestk
-        self.first_pruning()
+        self.pre_pruning()
 
-    def first_pruning(self):
+    def pre_pruning(self):
         """
-        Apply the first-pruning discussed in the report
+        Apply the pre-pruning discussed in the report
         Removes fom the symbols used during the search, those that lie in the pruning zone
         """
         # Look for the k best items
@@ -199,9 +199,7 @@ class BestK:
                 (sequences, support) = self.best_k[i]
                 if support == wacc:
                     # Already an existing
-                    # TODO: Check if subsequence with same support and remove it
                     sequences.append((sequence, support_pos, support_neg))
-                    # self.closing(sequence, support_pos, support_neg, sequences, support)
                     return
             # Not in there
             self.best_k.append(([(sequence, support_pos, support_neg)], wacc))
@@ -360,8 +358,7 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             # Threshold computation
             threshold_pos = bestk.min_Wacc * bestk.P
             threshold_neg = bestk.min_Wacc * bestk.N
-            wacc = Wacc(bestk.P, bestk.N, support_pos,
-                     support_neg)
+            wacc = Wacc(bestk.P, bestk.N, support_pos, support_neg)
             # Pruning verification
             if wacc >= bestk.min_Wacc or support_pos >= threshold_pos or support_neg >= threshold_neg:
                 # Frequent symbol in this sequence
@@ -404,8 +401,8 @@ def performance(pos_file, neg_file, k):
 
 def zone_analysis(pos_file, neg_file, k):
     """
-        Function used for the analysis
-        """
+    Function used for the analysis
+    """
     data_pos = Dataset(pos_file)
     data_neg = Dataset(neg_file)
     bestk = BestK(k, data_pos.trans_num(), data_neg.trans_num())

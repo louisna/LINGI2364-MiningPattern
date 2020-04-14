@@ -8,9 +8,14 @@ class Datasets:
         self.neg = neg
         self.all_symbols = [i for i in all_symbols]
         self.bestk = bestk
-        self.first_pruning()
+        self.pre_pruning()
 
-    def first_pruning(self):
+    def pre_pruning(self):
+        """
+        Apply the pre-pruning discussed in the report
+        Removes fom the symbols used during the search, those that lie in the pruning zone
+        """
+        # Look for the k best items
         best_unique = []
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
@@ -32,18 +37,17 @@ class Datasets:
         new_pos = dict()
         new_neg = dict()
 
+        # The min_wacc will be used to compute the threshold
         min_sup = min(best_unique)
 
         new_all_symbols = []
 
+        # Add only those that are not in the pruning zone
         for symbol in self.all_symbols:
             sup_pos = self.pos.vertical_first.get((symbol,)[0], [])
             sup_neg = self.neg.vertical_first.get((symbol,)[0], [])
             tot_sup = len(sup_pos) + len(sup_neg)
             if tot_sup in best_unique:
-                # Remove
-                # del self.pos.vertical[(symbol,)[0]]
-                # del self.neg.vertical[(symbol,)[0]]
                 new_all_symbols.append(symbol)
                 if symbol in self.pos.symbols:
                     new_pos[(symbol,)[0]] = self.pos.vertical[(symbol,)[0]]
@@ -78,6 +82,11 @@ class Dataset:
         # print(self.vertical)
 
     def open_vertical(self, filepath):
+        """
+        Reads the file "filepath" and stores it in a vertical representation
+        :param filepath: the path of the file
+        :return: /
+        """
         with open(filepath, "r") as fd:
             tr_nb = -1
             for line in fd:
@@ -102,19 +111,6 @@ class Dataset:
         self.nb_trans += tr_nb
         for i in self.symbols:
             self.symbols_list.append(i)
-
-    def open_file_naive(self, filepath):
-        with open(filepath, "r") as fd:
-            tr = list()
-            for line in fd:
-                if not line or line == "\n":
-                    if not len(tr) == 0:
-                        self.transactions.append(tr)
-                    tr = list()
-                else:
-                    symbol = list(line.split(" "))
-                    tr.append(symbol[0])
-                    self.symbols.add(symbol[0])
 
     def trans_num(self):
         """Returns the number of transactions in the dataset"""
@@ -144,6 +140,13 @@ class BestK:
         self.min_total_support = 1
 
     def add_frequent(self, sequence, support_pos, support_neg):
+        """
+        Adds "sequence", with support "support_pos" and "support_neg" to the top-k sequences... if it is one
+        :param sequence: The sequence
+        :param support_pos: Its positive support
+        :param support_neg: Its negative support
+        :return: /
+        """
         if len(self.best_k) < self.k:
             # Not full
             for i in range(len(self.best_k)):
@@ -183,6 +186,13 @@ class BestK:
 
 
 def projection(added_symbol, bestK, proj):
+    """
+    Projects the "proj" database with the "added_symbol"
+    :param added_symbol:
+    :param bestK:
+    :param proj: The database
+    :return: The new projection
+    """
     # Contains the projected database (positive) for the new sequence containing symbol
     new_proj = dict()
     first_occ_added_symbol = first_occ(added_symbol, proj)
@@ -200,6 +210,9 @@ def projection(added_symbol, bestK, proj):
 
 
 def first_occ(added_symbol, proj):
+    """
+    Computes the first first time "added_symbol" appears for each transaction in "proj"
+    """
     first = []
 
     a = tuple()
@@ -217,7 +230,9 @@ def first_occ(added_symbol, proj):
 
 
 def filter_trans(trans, first_occ_added_symbol):
-    # TODO: SPEED-UP: check if the remaining transactions are not enough to make it frequent item
+    """
+    Computes the filtering of the transaction
+    """
     out = []
     index_first = 0
     # tn = transaction number, tp = transaction position
@@ -236,10 +251,16 @@ def filter_trans(trans, first_occ_added_symbol):
 
 
 def count_occurences_symbol(projection, symbol):
+    """
+    :return: The number of transactions where symbol appears
+    """
     return len(first_occ(symbol, projection))
 
 
 def SPADE(data_pos, data_neg, bestk):
+    """
+    Beginning of the SPADE algorithm
+    """
 
     all_symbols = data_pos.symbols.union(data_neg.symbols)
     all_symbols_list = [i for i in all_symbols]
@@ -252,10 +273,15 @@ def SPADE(data_pos, data_neg, bestk):
 
 
 def dfs(sequence, bestk, dss, proj_pos, proj_neg):
-    # if sequence == ['C']:
-    #     print("passage DEBUT")
-    #     print(bestk.min_total_support)
-    #     print(proj_pos)
+    """
+    Main search in a DFS fashion
+    :param sequence: the current sequence of the search
+    :param bestk: The object containing information about the top-k sequences
+    :param dss: The datasets
+    :param proj_pos: Projection of the positive dataset of sequence
+    :param proj_neg: Projection of the negative dataset of sequence
+    :return:/
+    """
     for symbol in dss.all_symbols:
         a = tuple()
         a += (symbol,)
@@ -263,8 +289,11 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
             # Support before projection
             support_pos = count_occurences_symbol(proj_pos, symbol)
             support_neg = count_occurences_symbol(proj_neg, symbol)
+            # Threshold computation
             support = support_pos + support_neg
-            if support >= bestk.min_total_support:  # Frequent symbol in this sequence
+            # Pruning verification
+            if support >= bestk.min_total_support:  
+                # Frequent symbol in this sequence
                 new_pos = projection(symbol, bestk, proj_pos)
                 new_neg = projection(symbol, bestk, proj_neg)
 
@@ -272,13 +301,9 @@ def dfs(sequence, bestk, dss, proj_pos, proj_neg):
                     new_sequence = sequence.copy()
                     new_sequence.append(symbol)
 
-                    # if sequence == ['C']:
-                    #    print("je suis la")
-
+                    # Add eventually the new sequence in the top-k
                     bestk.add_frequent(new_sequence, support_pos, support_neg)
                     dfs(new_sequence, bestk, dss, new_pos, new_neg)
-    # if sequence == ["C"]:
-    #    print("passage FIN")
 
 
 def main():
