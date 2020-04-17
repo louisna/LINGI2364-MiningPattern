@@ -368,6 +368,29 @@ def zone_scoring_function_absolute_wracc(k=15, pos_file="Datasets/Protein/SRC152
 
     plt.show()
 
+def scoring_statistics(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
+    w = wracc.zone_analysis(pos_file, neg_file, k)
+    w_stat = np.zeros(len(w.best_k))
+    aw = abs_wracc.zone_analysis(pos_file, neg_file, k)
+    aw_stat = np.zeros(len(aw.best_k))
+    i = info.zone_analysis(pos_file, neg_file, k)
+    i_stat = np.zeros(len(i.best_k))
+    c = chi.zone_analysis(pos_file, neg_file, k)
+    c_stat = np.zeros(len(c.best_k))    
+    for j in range(len(w.best_k)):
+        w_stat[j] = w.best_k[j][1]
+    for j in range(len(aw.best_k)):
+        aw_stat[j] = aw.best_k[j][1]
+    for j in range(len(i.best_k)):
+        i_stat[j] = i.best_k[j][1]
+    for j in range(len(c.best_k)):
+        c_stat[j] = c.best_k[j][1]
+
+    print("wracc :","max =",np.max(w_stat), "min =", np.min(w_stat), "mean =" ,np.mean(w_stat))
+    print("abs_wracc :","max =",np.max(aw_stat), "min =", np.min(aw_stat), "mean =" ,np.mean(aw_stat))
+    print("info :","max =",np.max(i_stat), "min =", np.min(i_stat), "mean =" ,np.mean(i_stat))
+    print("chi :","max =",np.max(c_stat), "min =", np.min(c_stat), "mean =" ,np.mean(c_stat))
+
 
 def similarities_analysis(k=15, pos_file="Datasets/Protein/SRC1521.txt", neg_file="Datasets/Protein/PKA_group15.txt"):
     def set_from_best(best):
