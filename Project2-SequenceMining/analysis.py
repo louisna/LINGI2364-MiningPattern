@@ -117,6 +117,9 @@ def zone_scoring_function_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", n
     N = a.N
     score = a.min_Wracc
 
+    # To be like th others
+    max_x = 372-5
+
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
 
@@ -147,7 +150,7 @@ def zone_scoring_function_wracc(k=15, pos_file="Datasets/Protein/SRC1521.txt", n
     plt.ylim(bottom=0, top=max_y+5)
     plt.xlim(left=0, right=max_x+5)
 
-    plt.legend(loc="upper left")
+    plt.legend(loc="upper right")
     plt.xlabel("N space")
     plt.ylabel("P space")
     plt.title("ROC analysis for the Wracc scoring function and k=" + str(k))
@@ -223,7 +226,7 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
     plt.ylim(bottom=0, top=max_y+5)
     plt.xlim(left=0, right=max_x+5)
 
-    plt.legend()
+    plt.legend(loc="upper right")
     plt.xlabel("N space")
     plt.ylabel("P space")
     plt.title("ROC analysis for the Information Gain scoring function and k=" + str(k))
@@ -398,7 +401,7 @@ if __name__ == "__main__":
     # zone_scoring_function_wacc()
     # zone_scoring_function_wracc()
     # zone_scoring_function_absolute_wracc()
-    # zone_scoring_function_info_gain()
+    zone_scoring_function_info_gain()
     # zone_scoring_function_chi_square_correlation()
     # similarities_analysis(k=5)
-    similarities_analysis(pos_file="Datasets/Test/positive.txt",  neg_file='Datasets/Test/negative.txt', k=3)
+    # similarities_analysis(pos_file="Datasets/Test/positive.txt",  neg_file='Datasets/Test/negative.txt', k=3)
