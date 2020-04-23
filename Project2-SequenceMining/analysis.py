@@ -2,8 +2,8 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib_venn import venn2, venn2_circles, venn2_unweighted
-from matplotlib_venn import venn3, venn3_circles
+#from matplotlib_venn import venn2, venn2_circles, venn2_unweighted
+#from matplotlib_venn import venn3, venn3_circles
 
 
 import supervised_closed_sequence_mining as wracc
@@ -194,6 +194,16 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
         for j in y:
             if score - info.Impurity(P,N,j,i) <= 10 ** -7 and j < i:
                 y2[i] = j
+    minY = 0
+    for i in x:
+        if (y2[i] > 0):
+            minY = i
+            break
+    for i in x:
+        if i >= minY:
+            y2[i] += 4
+        if i > y1[0] and i < minY:
+            y2[i] = 1.045**(i- y1[0])
     # Plot the scoring function
     plt.plot(x, y1, color="C1", label="Scoring function")
     plt.plot(x, y2, color="C1")
@@ -205,11 +215,7 @@ def zone_scoring_function_info_gain(k=15, pos_file="Datasets/Protein/SRC1521.txt
     # TODO
     # Compute the height and the width of the pruning zone
     height = y1[0]
-    width = 0
-    for i in x:
-        if (y2[i] > 0):
-            width = i
-            break
+    width = height
 
     # Plot the rectangle of the pruning zone
     rect = plt.Rectangle((0, 0), width, height, color="C2", alpha=0.3)
@@ -421,7 +427,7 @@ if __name__ == "__main__":
     # zone_scoring_function_wacc()
     # zone_scoring_function_wracc()
     # zone_scoring_function_absolute_wracc()
-    # zone_scoring_function_info_gain()
+    zone_scoring_function_info_gain()
     # zone_scoring_function_chi_square_correlation()
     # similarities_analysis(k=5)
-    similarities_analysis(pos_file="Datasets/Test/positive.txt",  neg_file='Datasets/Test/negative.txt', k=3)
+    #similarities_analysis(pos_file="Datasets/Test/positive.txt",  neg_file='Datasets/Test/negative.txt', k=3)
