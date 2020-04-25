@@ -13,6 +13,8 @@ from sklearn import metrics
 from gspan_mining import gSpan
 from gspan_mining import GraphDatabase
 
+import heapq
+
 
 class PatternGraphs:
     """
@@ -102,11 +104,13 @@ class TopKConfident(PatternGraphs):
         super().__init__(database)
         self.minsup = minsup
         self.gid_subsets = subsets
-        self.bestk = []
+        self.bestk = []  # As a heap
         self.k = k
 
     def get_bestk(self):
-        return self.bestk
+        res = self.bestk.copy()
+        res.sort(key=lambda i: (-i[0], -i[1]))
+        return res
 
     def prune(self, gid_subsets):
         # first subset is the set of positive ids
@@ -118,18 +122,22 @@ class TopKConfident(PatternGraphs):
 
         min_confidence = -1
         if len(self.bestk) >= self.k:
-            min_confidence = self.bestk[self.k - 1][0]
+            min_confidence = self.bestk[0][0]
 
         if confidence >= min_confidence:
-            for i, t in enumerate(self.bestk):
+            for i, t in enumerate(self.bestk):  # TODO: Improve this for-loop
                 if t[0] == confidence and t[1] == total_support:
                     t[2].append(dfs_code)
                     return
 
-            self.bestk.append((confidence, total_support, [dfs_code]))
-            self.bestk.sort(key=lambda x: (-x[0], -x[1]))
-            if len(self.bestk) > self.k:
-                self.bestk = self.bestk[:-1]
+            # self.bestk.append((confidence, total_support, [dfs_code]))
+            # self.bestk.sort(key=lambda x: (-x[0], -x[1]))
+            # if len(self.bestk) > self.k:
+            #     self.bestk = self.bestk[:-1]
+            if len(self.bestk) >= self.k:
+                heapq.heapreplace(self.bestk, (confidence, total_support, [dfs_code]))
+            else:
+                heapq.heappush(self.bestk, (confidence, total_support, [dfs_code]))
 
 
 def finding_subgraphs():
