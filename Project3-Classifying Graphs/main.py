@@ -115,6 +115,52 @@ class TopKConfident(PatternGraphs):
 
     def prune(self, gid_subsets):
         # first subset is the set of positive ids
+        return len(gid_subsets[0] + gid_subsets[1]) < self.minsup
+
+    def store(self, dfs_code, gid_subsets):
+        total_support = len(gid_subsets[0]) + len(gid_subsets[1])
+        confidence = len(gid_subsets[0]) / total_support
+        # print(confidence, total_support, len(gid_subsets[0]), len(gid_subsets[2]))
+
+        min_confidence = -1
+        if len(self.bestk) >= self.k:
+            min_confidence = self.bestk[0][0]
+
+        if total_support < self.minsup or confidence < min_confidence:
+            return  # Not frequent
+
+
+        if confidence >= min_confidence:
+            for conf, sup, l in self.bestk:  # TODO: Improve this for-loop
+                if conf == confidence and sup == total_support:
+                    l.append((dfs_code, gid_subsets))
+                    return
+
+            # self.bestk.append((confidence, total_support, [dfs_code]))
+            # self.bestk.sort(key=lambda x: (-x[0], -x[1]))
+            # if len(self.bestk) > self.k:
+            #     self.bestk = self.bestk[:-1]
+            if len(self.bestk) >= self.k:
+                heapq.heapreplace(self.bestk, (confidence, total_support, [(dfs_code, gid_subsets)]))
+            else:
+                heapq.heappush(self.bestk, (confidence, total_support, [(dfs_code, gid_subsets)]))
+
+
+class TopKConfidentLearning(PatternGraphs):
+    def __init__(self, minsup, database, subsets, k):
+        super().__init__(database)
+        self.minsup = minsup
+        self.gid_subsets = subsets
+        self.bestk = []  # As a heap
+        self.k = k
+
+    def get_bestk(self):
+        res = self.bestk.copy()
+        res.sort(key=lambda i: (-i[0], -i[1]))
+        return res
+
+    def prune(self, gid_subsets):
+        # first subset is the set of positive ids
         return len(gid_subsets[0] + gid_subsets[2]) < self.minsup
 
     # creates a column for a feature matrix
@@ -181,10 +227,10 @@ def finding_subgraphs():
         k = int(args[3])  # Third parameter: k
         minsup = int(args[4])  # Fourth parameter: minimum support
     else:
-        database_file_name_pos = 'data/molecules-medium.pos'
-        database_file_name_neg = 'data/molecules-medium.neg'
-        k = 3
-        minsup = 100
+        database_file_name_pos = 'data/molecules-small.pos'
+        database_file_name_neg = 'data/molecules-small.neg'
+        k = 5
+        minsup = 5
 
     if not os.path.exists(database_file_name_pos):
         print('{} does not exist.'.format(database_file_name_pos))
@@ -305,7 +351,7 @@ def example2():
 
 
 def train_and_evaluate(minsup, database, subsets, k):
-    task = TopKConfident(minsup, database, subsets, k)  # Creating task
+    task = TopKConfidentLearning(minsup, database, subsets, k)  # Creating task
 
     gSpan(task).run()  # Running gSpan
 
@@ -421,19 +467,3 @@ if __name__ == '__main__':
     # example2()
     # finding_subgraphs()
     train_a_basic_model()
-
-    """
-    Should have
-    0.8 5
-0.8333333333333334 6
-1.0 5
-0.8571428571428571 7
-0.8 10
-
-but have
-0.75 8
-0.8 5
-0.8333333333333334 6
-1.0 5
-0.8571428571428571 7
-    """
