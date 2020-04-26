@@ -411,10 +411,10 @@ def train_a_basic_model():
         minsup = int(args[4])  # Fourth parameter: minimum support
         nfolds = int(args[5])  # Fifth parameter: number of folds to use in the k-fold cross-validation.
     else:
-        database_file_name_pos = 'data/molecules-small.pos'
-        database_file_name_neg = 'data/molecules-small.neg'
+        database_file_name_pos = 'data/molecules-medium.pos'
+        database_file_name_neg = 'data/molecules-medium.neg'
         k = 5
-        minsup = 5
+        minsup = 50
         nfolds = 4
 
     if not os.path.exists(database_file_name_pos):
@@ -460,6 +460,79 @@ def train_a_basic_model():
             # Printing fold number:
             print('fold {}'.format(i + 1))
             train_and_evaluate(minsup, graph_database, subsets, k)
+
+
+def sequential_covering_for_rule_learning():
+    """
+        Runs gSpan with the specified positive and negative graphs; finds all frequent subgraphs in the training subset of
+        the positive class with a minimum support of minsup.
+        Uses the patterns found to train a naive bayesian classifier using Scikit-learn and evaluates its performances on
+        the test set.
+        Performs a k-fold cross-validation.
+        """
+
+    a = 1
+    if a == 0:
+        args = sys.argv
+        database_file_name_pos = args[1]  # First parameter: path to positive class file
+        database_file_name_neg = args[2]  # Second parameter: path to negative class file
+        k = int(args[3])  # Third parameter: top-k value
+        minsup = int(args[4])  # Fourth parameter: minimum support
+        nfolds = int(args[5])  # Fifth parameter: number of folds to use in the k-fold cross-validation.
+    else:
+        database_file_name_pos = 'data/molecules-small.pos'
+        database_file_name_neg = 'data/molecules-small.neg'
+        k = 5
+        minsup = 5
+        nfolds = 4
+
+    if not os.path.exists(database_file_name_pos):
+        print('{} does not exist.'.format(database_file_name_pos))
+        sys.exit()
+    if not os.path.exists(database_file_name_neg):
+        print('{} does not exist.'.format(database_file_name_neg))
+        sys.exit()
+
+    graph_database = GraphDatabase()  # Graph database object
+    pos_ids = graph_database.read_graphs(
+        database_file_name_pos)  # Reading positive graphs, adding them to database and getting ids
+    neg_ids = graph_database.read_graphs(
+        database_file_name_neg)  # Reading negative graphs, adding them to database and getting ids
+
+    # If less than two folds: using the same set as training and test set (note this is not an accurate way to evaluate the performances!)
+    if nfolds < 2:
+        subsets = [
+            pos_ids,  # Positive training set
+            pos_ids,  # Positive test set
+            neg_ids,  # Negative training set
+            neg_ids  # Negative test set
+        ]
+        # Printing fold number:
+        print('fold {}'.format(1))
+        sequential_covering(minsup, graph_database, subsets, k)
+
+    # Otherwise: performs k-fold cross-validation:
+    else:
+        pos_fold_size = len(pos_ids) // nfolds
+        neg_fold_size = len(neg_ids) // nfolds
+        for i in range(nfolds):
+            # Use fold as test set, the others as training set for each class;
+            # identify all the subsets to be maintained by the graph mining algorithm.
+            subsets = [
+                numpy.concatenate((pos_ids[:i * pos_fold_size], pos_ids[(i + 1) * pos_fold_size:])),
+                # Positive training set
+                pos_ids[i * pos_fold_size:(i + 1) * pos_fold_size],  # Positive test set
+                numpy.concatenate((neg_ids[:i * neg_fold_size], neg_ids[(i + 1) * neg_fold_size:])),
+                # Negative training set
+                neg_ids[i * neg_fold_size:(i + 1) * neg_fold_size],  # Negative test set
+            ]
+            # Printing fold number:
+            print('fold {}'.format(i + 1))
+            sequential_covering(minsup, graph_database, subsets, k)
+
+
+def sequential_covering(minsup, database, subsets, k):
+    pass
 
 
 if __name__ == '__main__':
