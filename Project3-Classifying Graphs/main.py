@@ -130,7 +130,6 @@ class TopKConfident(PatternGraphs):
         if total_support < self.minsup or confidence < min_confidence:
             return  # Not frequent
 
-        # TODO: Check if still correct with this
         if confidence == min_confidence and total_support < self.bestk[0][1]:
             return  # Less good than the least good (in term of support)
 
@@ -190,7 +189,6 @@ class TopKConfidentLearning(PatternGraphs):
         if total_support < self.minsup or confidence < min_confidence:
             return  # Not frequent
 
-        # TODO: Check if still correct with this
         if confidence == min_confidence and total_support < self.bestk[0][1]:
             return  # Less good than the least good (in term of support)
 
@@ -251,7 +249,6 @@ class TopKConfidentSequentialLearning(PatternGraphs):
         if total_support < self.minsup or confidence < min_confidence:
             return  # Not frequent
 
-        # TODO: Check if still correct with this
         if confidence == min_confidence and total_support < self.bestk[0][1]:
             return  # Less good than the least good (in term of support)
 
@@ -540,10 +537,10 @@ def sequential_covering_for_rule_learning():
         minsup = int(args[4])  # Fourth parameter: minimum support
         nfolds = int(args[5])  # Fifth parameter: number of folds to use in the k-fold cross-validation.
     else:
-        database_file_name_pos = 'data/molecules-small.pos'
-        database_file_name_neg = 'data/molecules-small.neg'
-        k = 5
-        minsup = 5
+        database_file_name_pos = 'data/molecules-medium.pos'
+        database_file_name_neg = 'data/molecules-medium.neg'
+        k = 7
+        minsup = 25
         nfolds = 4
 
     if not os.path.exists(database_file_name_pos):
@@ -650,20 +647,9 @@ def sequential_covering(minsup, database, subsets, k):
     print()  # Blank line to indicate end of fold.
 
 
-
-
-
-    # TODO: test our sequential covering learning
-
-
-
-
-
-
-
 if __name__ == '__main__':
     # example1()
     # example2()
-    # finding_subgraphs()
+    finding_subgraphs()
     # train_a_basic_model()
-    sequential_covering_for_rule_learning()
+    # sequential_covering_for_rule_learning()
