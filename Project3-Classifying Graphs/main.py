@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import copy
 import os
 import sys
 import numpy
@@ -129,6 +130,9 @@ class TopKConfident(PatternGraphs):
         if total_support < self.minsup or confidence < min_confidence:
             return  # Not frequent
 
+        # TODO: Check if still correct with this
+        if confidence == min_confidence and total_support < self.bestk[0][1]:
+            return  # Less good than the least good (in term of support)
 
         if confidence >= min_confidence:
             for conf, sup, l in self.bestk:  # TODO: Improve this for-loop
@@ -186,6 +190,10 @@ class TopKConfidentLearning(PatternGraphs):
         if total_support < self.minsup or confidence < min_confidence:
             return  # Not frequent
 
+        # TODO: Check if still correct with this
+        if confidence == min_confidence and total_support < self.bestk[0][1]:
+            return  # Less good than the least good (in term of support)
+
 
         if confidence >= min_confidence:
             for conf, sup, l in self.bestk:  # TODO: Improve this for-loop
@@ -209,6 +217,58 @@ class TopKConfidentLearning(PatternGraphs):
                 for i, gid_subset in enumerate(gid_subsets):
                     matrices[i].append(self.create_fm_col(self.gid_subsets[i], gid_subset))
         return [numpy.array(matrix).transpose() for matrix in matrices]
+
+
+class TopKConfidentSequentialLearning(PatternGraphs):
+    def __init__(self, minsup, database, subsets, k=1):
+        super().__init__(database)
+        self.minsup = minsup
+        self.gid_subsets = subsets
+        self.k = k
+        # (confidence, total_support, [(dfs_code, gid_subsets, label)]
+        self.bestk = []  # As a heap
+
+    def prune(self, gid_subsets):
+        # first subset is the set of positive ids
+        return len(gid_subsets[0] + gid_subsets[2]) < self.minsup
+
+    def store(self, dfs_code, gid_subsets):
+        total_support = len(gid_subsets[0]) + len(gid_subsets[2])
+        confidence_pos = len(gid_subsets[0]) / total_support
+        confidence_neg = len(gid_subsets[2]) / total_support
+
+        if confidence_pos >= confidence_neg:
+            confidence = confidence_pos
+            label = "pos"
+        else:
+            confidence = confidence_neg
+            label = "neg"
+
+        min_confidence = -1
+        if len(self.bestk) >= self.k:
+            min_confidence = self.bestk[0][0]
+
+        if total_support < self.minsup or confidence < min_confidence:
+            return  # Not frequent
+
+        # TODO: Check if still correct with this
+        if confidence == min_confidence and total_support < self.bestk[0][1]:
+            return  # Less good than the least good (in term of support)
+
+        if confidence >= min_confidence:
+            for conf, sup, l in self.bestk:  # TODO: Improve this for-loop
+                if conf == confidence and sup == total_support:
+                    heapq.heappush(l, (dfs_code, gid_subsets, label))
+                    return
+
+            # self.bestk.append((confidence, total_support, [dfs_code]))
+            # self.bestk.sort(key=lambda x: (-x[0], -x[1]))
+            # if len(self.bestk) > self.k:
+            #     self.bestk = self.bestk[:-1]
+            if len(self.bestk) >= self.k:
+                heapq.heapreplace(self.bestk, (confidence, total_support, [(dfs_code, gid_subsets, label)]))
+            else:
+                heapq.heappush(self.bestk, (confidence, total_support, [(dfs_code, gid_subsets, label)]))
 
 
 def finding_subgraphs():
@@ -411,10 +471,10 @@ def train_a_basic_model():
         minsup = int(args[4])  # Fourth parameter: minimum support
         nfolds = int(args[5])  # Fifth parameter: number of folds to use in the k-fold cross-validation.
     else:
-        database_file_name_pos = 'data/molecules-medium.pos'
-        database_file_name_neg = 'data/molecules-medium.neg'
+        database_file_name_pos = 'data/molecules-small.pos'
+        database_file_name_neg = 'data/molecules-small.neg'
         k = 5
-        minsup = 50
+        minsup = 5
         nfolds = 4
 
     if not os.path.exists(database_file_name_pos):
@@ -519,10 +579,10 @@ def sequential_covering_for_rule_learning():
             # Use fold as test set, the others as training set for each class;
             # identify all the subsets to be maintained by the graph mining algorithm.
             subsets = [
-                numpy.concatenate((pos_ids[:i * pos_fold_size], pos_ids[(i + 1) * pos_fold_size:])),
+                list(numpy.concatenate((pos_ids[:i * pos_fold_size], pos_ids[(i + 1) * pos_fold_size:]))),
                 # Positive training set
                 pos_ids[i * pos_fold_size:(i + 1) * pos_fold_size],  # Positive test set
-                numpy.concatenate((neg_ids[:i * neg_fold_size], neg_ids[(i + 1) * neg_fold_size:])),
+                list(numpy.concatenate((neg_ids[:i * neg_fold_size], neg_ids[(i + 1) * neg_fold_size:]))),
                 # Negative training set
                 neg_ids[i * neg_fold_size:(i + 1) * neg_fold_size],  # Negative test set
             ]
@@ -532,11 +592,78 @@ def sequential_covering_for_rule_learning():
 
 
 def sequential_covering(minsup, database, subsets, k):
-    pass
+    rule_list = []
+    wrongly_predicted = []
+    correctly_predicted = []
+    for _ in range(k):  # Perform k iterations of top-1 confident
+        task = TopKConfidentSequentialLearning(minsup, database, subsets, 1)
+
+        gSpan(task).run()  # Running gSpan
+        if len(task.bestk) == 0:  # All transactions have been covered
+            break
+
+        conf, sup, patterns = task.bestk[0]  # Take best (which should be unique)
+        # patterns is a list containing all patterns with that confidence and sup
+        # This list is a heap sorted (AZ) according to the dfs_code
+        # Hence, the first entry of this list contains the lowest dfs_code
+        # TODO: maybe it is quicker to check in linear time here than push in logarithmic in the search
+        pattern, gid_subsets, label = patterns[0]
+
+        # Add the pattern in the rule_list
+        # TODO: maybe gid_subsets is useless here
+        rule_list.append((conf, sup, pattern, gid_subsets, label))
+
+        # Add the predicted result for the test values
+        if label == 'pos':
+            # Add the positive tests as correct and negative tests are incorrect
+            correctly_predicted += [(i, 'pos') for i in gid_subsets[1]]
+            wrongly_predicted += [(i, 'pos') for i in gid_subsets[3]]
+        else:
+            correctly_predicted += [(i, 'neg') for i in gid_subsets[3]]
+            wrongly_predicted += [(i, 'neg') for i in gid_subsets[1]]
+
+        # TODO: for now the print for the pattern is here; maybe be cleaner
+        print(pattern, conf, sup)
+
+        # Remove from subsets the transactions in gid_subsets (both positive and negative)
+        for index_type_subset in range(4):  # 0 = pos_train, 1 = pos_test, 2 = neg_train, 3 = neg_test
+            for transact in gid_subsets[index_type_subset]:  # Transaction number to be removed
+                subsets[index_type_subset].remove(transact)
+
+    # Define the default class
+    if len(subsets[0]) >= len(subsets[2]):  # If more (or same) positive remaining
+        default_class = "pos"
+        correctly_predicted += [(i, 'pos') for i in subsets[1]]
+        wrongly_predicted += [(i, 'pos') for i in subsets[3]]
+    else:
+        default_class = "neg"
+        correctly_predicted += [(i, 'neg') for i in subsets[3]]
+        wrongly_predicted += [(i, 'neg') for i in subsets[1]]
+
+    pred = correctly_predicted + wrongly_predicted
+    pred.sort(key=lambda x: x[0])
+    pred_label = [1 if i[1] == 'pos' else -1 for i in pred]
+    print(pred_label)
+
+    accuracy = len(correctly_predicted) / (len(correctly_predicted) + len(wrongly_predicted))
+    print("accuracy: {}".format(accuracy))
+    print()  # Blank line to indicate end of fold.
+
+
+
+
+
+    # TODO: test our sequential covering learning
+
+
+
+
+
 
 
 if __name__ == '__main__':
     # example1()
     # example2()
     # finding_subgraphs()
-    train_a_basic_model()
+    # train_a_basic_model()
+    sequential_covering_for_rule_learning()
