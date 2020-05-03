@@ -451,9 +451,10 @@ def train_and_evaluate(minsup, database, subsets, k):
     print(predicted.tolist())
     print('accuracy: {}'.format(accuracy))
     print()  # Blank line to indicate end of fold.
+    return accuracy
 
 
-def train_a_basic_model():
+def train_a_basic_model(pos='data/molecules-medium.pos', neg='data/molecules-medium.neg', k1=5, minsup1=2):
     """
         Runs gSpan with the specified positive and negative graphs; finds all frequent subgraphs in the training subset of
         the positive class with a minimum support of minsup.
@@ -462,7 +463,7 @@ def train_a_basic_model():
         Performs a k-fold cross-validation.
         """
 
-    a = 0
+    a = 1
     if a == 0:
         args = sys.argv
         database_file_name_pos = args[1]  # First parameter: path to positive class file
@@ -471,10 +472,10 @@ def train_a_basic_model():
         minsup = int(args[4])  # Fourth parameter: minimum support
         nfolds = int(args[5])  # Fifth parameter: number of folds to use in the k-fold cross-validation.
     else:
-        database_file_name_pos = 'data/molecules-medium.pos'
-        database_file_name_neg = 'data/molecules-medium.neg'
-        k = 7
-        minsup = 35
+        database_file_name_pos = pos
+        database_file_name_neg = neg
+        k = k1
+        minsup = minsup1
         nfolds = 4
 
     if not os.path.exists(database_file_name_pos):
@@ -506,6 +507,9 @@ def train_a_basic_model():
     else:
         pos_fold_size = len(pos_ids) // nfolds
         neg_fold_size = len(neg_ids) // nfolds
+
+        res_by_fold = numpy.array([0.0] * nfolds)
+
         for i in range(nfolds):
             # Use fold as test set, the others as training set for each class;
             # identify all the subsets to be maintained by the graph mining algorithm.
@@ -519,10 +523,11 @@ def train_a_basic_model():
             ]
             # Printing fold number:
             print('fold {}'.format(i + 1))
-            train_and_evaluate(minsup, graph_database, subsets, k)
+            res_by_fold[i] = train_and_evaluate(minsup, graph_database, subsets, k)
+        return res_by_fold
 
 
-def sequential_covering_for_rule_learning():
+def sequential_covering_for_rule_learning(pos='data/molecules-medium.pos', neg='data/molecules-medium.neg', k1=5, minsup1=2):
     """
         Runs gSpan with the specified positive and negative graphs; finds all frequent subgraphs in the training subset of
         the positive class with a minimum support of minsup.
@@ -531,7 +536,7 @@ def sequential_covering_for_rule_learning():
         Performs a k-fold cross-validation.
         """
 
-    a = 0
+    a = 1
     if a == 0:
         args = sys.argv
         database_file_name_pos = args[1]  # First parameter: path to positive class file
@@ -540,10 +545,10 @@ def sequential_covering_for_rule_learning():
         minsup = int(args[4])  # Fourth parameter: minimum support
         nfolds = int(args[5])  # Fifth parameter: number of folds to use in the k-fold cross-validation.
     else:
-        database_file_name_pos = 'data/molecules-medium.pos'
-        database_file_name_neg = 'data/molecules-medium.neg'
-        k = 7
-        minsup = 25
+        database_file_name_pos = pos
+        database_file_name_neg = neg
+        k = k1
+        minsup = minsup1
         nfolds = 4
 
     if not os.path.exists(database_file_name_pos):
@@ -575,6 +580,9 @@ def sequential_covering_for_rule_learning():
     else:
         pos_fold_size = len(pos_ids) // nfolds
         neg_fold_size = len(neg_ids) // nfolds
+
+        res_by_fold = numpy.array([0.0] * nfolds)
+
         for i in range(nfolds):
             # Use fold as test set, the others as training set for each class;
             # identify all the subsets to be maintained by the graph mining algorithm.
@@ -588,7 +596,8 @@ def sequential_covering_for_rule_learning():
             ]
             # Printing fold number:
             print('fold {}'.format(i + 1))
-            sequential_covering(minsup, graph_database, subsets, k)
+            res_by_fold[i] = sequential_covering(minsup, graph_database, subsets, k)
+        return res_by_fold
 
 
 def sequential_covering(minsup, database, subsets, k):
@@ -648,9 +657,10 @@ def sequential_covering(minsup, database, subsets, k):
     accuracy = len(correctly_predicted) / (len(correctly_predicted) + len(wrongly_predicted))
     print("accuracy: {}".format(accuracy))
     print()  # Blank line to indicate end of fold.
+    return accuracy
 
 
-def another_classifier():
+def another_classifier(pos='data/molecules-medium.pos', neg='data/molecules-medium.neg', k1=5, minsup1=2):
     """
         Runs gSpan with the specified positive and negative graphs; finds all frequent subgraphs in the training subset of
         the positive class with a minimum support of minsup.
@@ -659,15 +669,17 @@ def another_classifier():
         Performs a k-fold cross-validation.
         """
 
-    a = 0
+    a = 1
     if a == 0:
         args = sys.argv
         database_file_name_pos = args[1]  # First parameter: path to positive class file
         database_file_name_neg = args[2]  # Second parameter: path to negative class file
         nfolds = int(args[3])  # Fifth parameter: number of folds to use in the k-fold cross-validation.
     else:
-        database_file_name_pos = 'data/molecules-small.pos'
-        database_file_name_neg = 'data/molecules-small.neg'
+        database_file_name_pos = pos
+        database_file_name_neg = neg
+        k = k1
+        minsup = minsup1
         nfolds = 4
 
     if not os.path.exists(database_file_name_pos):
@@ -699,6 +711,9 @@ def another_classifier():
     else:
         pos_fold_size = len(pos_ids) // nfolds
         neg_fold_size = len(neg_ids) // nfolds
+
+        res_by_fold = numpy.array([0.0] * nfolds)
+
         for i in range(nfolds):
             # Use fold as test set, the others as training set for each class;
             # identify all the subsets to be maintained by the graph mining algorithm.
@@ -712,16 +727,21 @@ def another_classifier():
             ]
             # Printing fold number:
             print('fold {}'.format(i + 1))
-            another_train(graph_database, subsets)
+            res_by_fold[i] = another_train(graph_database, subsets, k1=k, minsup1=minsup)
+        return res_by_fold
 
 
-def another_train(database, subsets):
+def another_train(database, subsets, k1=-1, minsup1=-1):
     # Choose parameters
 
-    database_size = len(subsets[0]) + len(subsets[2])
+    if k1 == -1:
+        database_size = len(subsets[0]) + len(subsets[2])
 
-    minsup = (database_size // 2) + 1
-    k = (database_size // 100) + 1
+        minsup = (database_size // 2) + 1
+        k = (database_size // 100) + 1
+    else:
+        minsup = minsup1
+        k = k1
 
     task = TopKConfidentLearning(minsup, database, subsets, k)  # Creating task
 
@@ -764,6 +784,7 @@ def another_train(database, subsets):
     print(predicted.tolist())
     print('accuracy: {}'.format(accuracy))
     print()  # Blank line to indicate end of fold.
+    return accuracy
 
 
 if __name__ == '__main__':
