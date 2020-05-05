@@ -10,6 +10,7 @@ import sys
 import numpy
 from sklearn import naive_bayes
 from sklearn import metrics
+from sklearn.svm import SVC
 from sklearn import tree
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -476,7 +477,7 @@ def train_a_basic_model(pos='data/molecules-medium.pos', neg='data/molecules-med
         database_file_name_neg = neg
         k = k1
         minsup = minsup1
-        nfolds = 4
+        nfolds = 8
 
     if not os.path.exists(database_file_name_pos):
         print('{} does not exist.'.format(database_file_name_pos))
@@ -549,7 +550,7 @@ def sequential_covering_for_rule_learning(pos='data/molecules-medium.pos', neg='
         database_file_name_neg = neg
         k = k1
         minsup = minsup1
-        nfolds = 4
+        nfolds = 8
 
     if not os.path.exists(database_file_name_pos):
         print('{} does not exist.'.format(database_file_name_pos))
@@ -660,7 +661,7 @@ def sequential_covering(minsup, database, subsets, k):
     return accuracy
 
 
-def another_classifier(pos='data/molecules-medium.pos', neg='data/molecules-medium.neg', k1=5, minsup1=2):
+def another_classifier(pos='data/molecules-small.pos', neg='data/molecules-small.neg', k1=5, minsup1=2, clf='rf'):
     """
         Runs gSpan with the specified positive and negative graphs; finds all frequent subgraphs in the training subset of
         the positive class with a minimum support of minsup.
@@ -680,7 +681,7 @@ def another_classifier(pos='data/molecules-medium.pos', neg='data/molecules-medi
         database_file_name_neg = neg
         k = k1
         minsup = minsup1
-        nfolds = 4
+        nfolds = 8
 
     if not os.path.exists(database_file_name_pos):
         print('{} does not exist.'.format(database_file_name_pos))
@@ -727,11 +728,11 @@ def another_classifier(pos='data/molecules-medium.pos', neg='data/molecules-medi
             ]
             # Printing fold number:
             print('fold {}'.format(i + 1))
-            res_by_fold[i] = another_train(graph_database, subsets, k1=k, minsup1=minsup)
+            res_by_fold[i] = another_train(graph_database, subsets, k1=k, minsup1=minsup, clf=clf)
         return res_by_fold
 
 
-def another_train(database, subsets, k1=-1, minsup1=-1):
+def another_train(database, subsets, k1=-1, minsup1=-1, clf='rf'):
     # Choose parameters
 
     if k1 == -1:
@@ -764,7 +765,10 @@ def another_train(database, subsets, k1=-1, minsup1=-1):
         (numpy.full(len(features[1]), 1, dtype=int), numpy.full(len(features[3]), -1, dtype=int)))  # Testing labels
 
     # classifier = tree.DecisionTreeClassifier(random_state=1)  # Creating model object
-    classifier = RandomForestClassifier(min_samples_split=10, ccp_alpha=0.04, class_weight="balanced_subsample")
+    if clf == 'rf':
+        classifier = RandomForestClassifier(min_samples_split=5, ccp_alpha=0.07, max_depth=5, n_estimators=100)
+    else:
+        classifier = SVC(kernel='linear', C=0.9)
     classifier.fit(train_fm, train_labels)  # Training model
 
     predicted = classifier.predict(test_fm)  # Using model to predict labels of testing data
