@@ -32,7 +32,7 @@ def analyze_by_k(pos='data/molecules-small.pos', neg='data/molecules-small.neg')
 
 def analyze_by_minsup(pos='data/molecules-small.pos', neg='data/molecules-small.neg'):
     k = 7
-    minsup = list(range(5, 20))
+    minsup = list(range(15, 20))
 
     res_dt = np.zeros(len(minsup))
     res_sr = np.zeros(len(minsup))
@@ -44,6 +44,12 @@ def analyze_by_minsup(pos='data/molecules-small.pos', neg='data/molecules-small.
         res_sr[index] = np.mean(sequential_covering_for_rule_learning(pos, neg, k, i))
         res_rf[index] = np.mean(another_classifier(pos, neg, k, i, 'svm'))
         res_svc[index] = np.mean(another_classifier(pos, neg, k, i, 'rf'))
+
+    np.save('accuracy_minsup_medium.npy', [[k, minsup], res_dt, res_sr, res_rf, res_svc])
+
+
+def graph_from_minsup(filename):
+    [k, minsup], res_dt, res_sr, res_rf, res_svc = np.load(filename, allow_pickle=True)
 
     plt.figure()
     plt.plot(minsup, res_dt, marker='s', markersize=8, label="Decision tree", color="C0")
@@ -63,4 +69,5 @@ def analyze_by_minsup(pos='data/molecules-small.pos', neg='data/molecules-small.
 
 if __name__ == "__main__":
     # analyze_by_k()
-    analyze_by_minsup()
+    # analyze_by_minsup()
+    graph_from_minsup("accuracy_minsup_medium.npy")
