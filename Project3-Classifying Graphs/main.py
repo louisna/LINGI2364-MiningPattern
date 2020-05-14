@@ -44,7 +44,7 @@ class PatternGraphs:
         :param dfs_code: the dfs code of the pattern (as a string).
         :param gid_subsets: the cover (set of graph ids in which the pattern is present) for each subset in self.gid_subsets
         """
-        print("Please implement the store function in a subclass for a specific mining task!")
+        # print("Please implement the store function in a subclass for a specific mining task!")
 
     def prune(self, gid_subsets):
         """
@@ -53,7 +53,7 @@ class PatternGraphs:
         :param gid_subsets: A list of the cover of the pattern for each subset.
         :return: true if the pattern should be pruned, false otherwise.
         """
-        print("Please implement the prune function in a subclass for a specific mining task!")
+        # print("Please implement the prune function in a subclass for a specific mining task!")
 
 
 class FrequentPositiveGraphs(PatternGraphs):
@@ -124,7 +124,7 @@ class TopKConfident(PatternGraphs):
     def store(self, dfs_code, gid_subsets):
         total_support = len(gid_subsets[0]) + len(gid_subsets[1])
         confidence = len(gid_subsets[0]) / total_support
-        # print(confidence, total_support, len(gid_subsets[0]), len(gid_subsets[2]))
+        # # print(confidence, total_support, len(gid_subsets[0]), len(gid_subsets[2]))
 
         min_confidence = -1
         if len(self.bestk) >= self.k:
@@ -183,7 +183,7 @@ class TopKConfidentLearning(PatternGraphs):
     def store(self, dfs_code, gid_subsets):
         total_support = len(gid_subsets[0]) + len(gid_subsets[2])
         confidence = len(gid_subsets[0]) / total_support
-        # print(confidence, total_support, len(gid_subsets[0]), len(gid_subsets[2]))
+        # # print(confidence, total_support, len(gid_subsets[0]), len(gid_subsets[2]))
 
         min_confidence = -1
         if len(self.bestk) >= self.k:
@@ -275,7 +275,7 @@ def finding_subgraphs():
     """
     Runs gSpan with the specified positive and negative graphs, finds the top-k frequent subgraphs subject to the
     positive confidence then frequency values in the positive and negative class with a minimum positive support of
-    minsup and prints them.
+    minsup and # prints them.
     """
 
     a = 1
@@ -293,10 +293,10 @@ def finding_subgraphs():
         minsup = 5
 
     if not os.path.exists(database_file_name_pos):
-        print('{} does not exist.'.format(database_file_name_pos))
+        # print('{} does not exist.'.format(database_file_name_pos))
         sys.exit()
     if not os.path.exists(database_file_name_neg):
-        print('{} does not exist.'.format(database_file_name_neg))
+        # print('{} does not exist.'.format(database_file_name_neg))
         sys.exit()
 
     graph_database = GraphDatabase()  # Graph database object
@@ -312,13 +312,14 @@ def finding_subgraphs():
 
     for t in task.get_bestk():
         for pattern, _ in t[2]:
-            print('{} {} {}'.format(pattern, t[0], t[1]))
+            pass
+            # print('{} {} {}'.format(pattern, t[0], t[1]))
 
 
 def example1():
     """
     Runs gSpan with the specified positive and negative graphs, finds all frequent subgraphs in the positive class
-    with a minimum positive support of minsup and prints them.
+    with a minimum positive support of minsup and # prints them.
     """
 
     args = sys.argv
@@ -327,10 +328,10 @@ def example1():
     minsup = int(args[3])  # Third parameter: minimum support
 
     if not os.path.exists(database_file_name_pos):
-        print('{} does not exist.'.format(database_file_name_pos))
+        # print('{} does not exist.'.format(database_file_name_pos))
         sys.exit()
     if not os.path.exists(database_file_name_neg):
-        print('{} does not exist.'.format(database_file_name_neg))
+        # print('{} does not exist.'.format(database_file_name_neg))
         sys.exit()
 
     graph_database = GraphDatabase()  # Graph database object
@@ -344,10 +345,10 @@ def example1():
 
     gSpan(task).run()  # Running gSpan
 
-    # Printing frequent patterns along with their positive support:
+    # # printing frequent patterns along with their positive support:
     for pattern, gid_subsets in task.patterns:
         pos_support = len(gid_subsets[0])  # This will have to be replaced by the confidence and support on both classes
-        print('{} {}'.format(pattern, pos_support))
+        # print('{} {}'.format(pattern, pos_support))
 
 
 def example2():
@@ -366,10 +367,10 @@ def example2():
     nfolds = int(args[4])  # Fourth parameter: number of folds to use in the k-fold cross-validation.
 
     if not os.path.exists(database_file_name_pos):
-        print('{} does not exist.'.format(database_file_name_pos))
+        # print('{} does not exist.'.format(database_file_name_pos))
         sys.exit()
     if not os.path.exists(database_file_name_neg):
-        print('{} does not exist.'.format(database_file_name_neg))
+        # print('{} does not exist.'.format(database_file_name_neg))
         sys.exit()
 
     graph_database = GraphDatabase()  # Graph database object
@@ -386,8 +387,8 @@ def example2():
             neg_ids,  # Negative training set
             neg_ids  # Negative test set
         ]
-        # Printing fold number:
-        print('fold {}'.format(1))
+        # # printing fold number:
+        # print('fold {}'.format(1))
         train_and_evaluate(minsup, graph_database, subsets)
 
     # Otherwise: performs k-fold cross-validation:
@@ -405,8 +406,8 @@ def example2():
                 # Negative training set
                 neg_ids[i * neg_fold_size:(i + 1) * neg_fold_size],  # Negative test set
             ]
-            # Printing fold number:
-            print('fold {}'.format(i + 1))
+            # # printing fold number:
+            # print('fold {}'.format(i + 1))
             train_and_evaluate(minsup, graph_database, subsets)
 
 
@@ -415,12 +416,12 @@ def train_and_evaluate(minsup, database, subsets, k):
 
     gSpan(task).run()  # Running gSpan
 
-    # print('value \n of \n top-k')
-    # print(len(task.bestk))
+    # # print('value \n of \n top-k')
+    # # print(len(task.bestk))
     # for i in task.bestk:
-    #     print(len(i[2]))
-    #     print(i[0], i[1])
-    # print('value\n done \n')
+    #     # print(len(i[2]))
+    #     # print(i[0], i[1])
+    # # print('value\n done \n')
 
     # Creating feature matrices for training and testing:
     features = task.get_feature_matrices()
@@ -431,27 +432,29 @@ def train_and_evaluate(minsup, database, subsets, k):
     test_labels = numpy.concatenate(
         (numpy.full(len(features[1]), 1, dtype=int), numpy.full(len(features[3]), -1, dtype=int)))  # Testing labels
 
-    # classifier = tree.DecisionTreeClassifier(random_state=1)  # Creating model object
-    classifier = KNeighborsClassifier(n_neighbors=20)
+    classifier = tree.DecisionTreeClassifier(random_state=1)  # Creating model object
+    # classifier = KNeighborsClassifier(n_neighbors=20)
     classifier.fit(train_fm, train_labels)  # Training model
 
     predicted = classifier.predict(test_fm)  # Using model to predict labels of testing data
 
     accuracy = metrics.accuracy_score(test_labels, predicted)  # Computing accuracy:
 
-    # Printing frequent patterns along with their positive support:
+    # # printing frequent patterns along with their positive support:
     # for pattern, gid_subsets in task.get_pattern():
     #     pos_support = len(gid_subsets[0])
-    #     print('{} {}'.format(pattern, pos_support))
+    #     # print('{} {}'.format(pattern, pos_support))
 
-    # New print
+    # New # print
+    """
     for confidence, total_support, list_code_gid in task.get_bestk():
         for pattern, gid_subsets in list_code_gid:
-            print('{} {} {}'.format(pattern, confidence, total_support))
-    # printing classification results:
-    print(predicted.tolist())
-    print('accuracy: {}'.format(accuracy))
-    print()  # Blank line to indicate end of fold.
+            # print('{} {} {}'.format(pattern, confidence, total_support))
+    # # printing classification results:
+    # print(predicted.tolist())
+    # print('accuracy: {}'.format(accuracy))
+    # print()  # Blank line to indicate end of fold.
+    """
     return accuracy
 
 
@@ -480,10 +483,10 @@ def train_a_basic_model(pos='data/molecules-medium.pos', neg='data/molecules-med
         nfolds = 8
 
     if not os.path.exists(database_file_name_pos):
-        print('{} does not exist.'.format(database_file_name_pos))
+        # print('{} does not exist.'.format(database_file_name_pos))
         sys.exit()
     if not os.path.exists(database_file_name_neg):
-        print('{} does not exist.'.format(database_file_name_neg))
+        # print('{} does not exist.'.format(database_file_name_neg))
         sys.exit()
 
     graph_database = GraphDatabase()  # Graph database object
@@ -500,8 +503,8 @@ def train_a_basic_model(pos='data/molecules-medium.pos', neg='data/molecules-med
             neg_ids,  # Negative training set
             neg_ids  # Negative test set
         ]
-        # Printing fold number:
-        print('fold {}'.format(1))
+        # # printing fold number:
+        # print('fold {}'.format(1))
         train_and_evaluate(minsup, graph_database, subsets, k)
 
     # Otherwise: performs k-fold cross-validation:
@@ -522,8 +525,8 @@ def train_a_basic_model(pos='data/molecules-medium.pos', neg='data/molecules-med
                 # Negative training set
                 neg_ids[i * neg_fold_size:(i + 1) * neg_fold_size],  # Negative test set
             ]
-            # Printing fold number:
-            print('fold {}'.format(i + 1))
+            # # printing fold number:
+            # print('fold {}'.format(i + 1))
             res_by_fold[i] = train_and_evaluate(minsup, graph_database, subsets, k)
         return res_by_fold
 
@@ -553,10 +556,10 @@ def sequential_covering_for_rule_learning(pos='data/molecules-medium.pos', neg='
         nfolds = 8
 
     if not os.path.exists(database_file_name_pos):
-        print('{} does not exist.'.format(database_file_name_pos))
+        # print('{} does not exist.'.format(database_file_name_pos))
         sys.exit()
     if not os.path.exists(database_file_name_neg):
-        print('{} does not exist.'.format(database_file_name_neg))
+        # print('{} does not exist.'.format(database_file_name_neg))
         sys.exit()
 
     graph_database = GraphDatabase()  # Graph database object
@@ -573,8 +576,8 @@ def sequential_covering_for_rule_learning(pos='data/molecules-medium.pos', neg='
             neg_ids,  # Negative training set
             neg_ids  # Negative test set
         ]
-        # Printing fold number:
-        print('fold {}'.format(1))
+        # # printing fold number:
+        # print('fold {}'.format(1))
         sequential_covering(minsup, graph_database, subsets, k)
 
     # Otherwise: performs k-fold cross-validation:
@@ -595,8 +598,8 @@ def sequential_covering_for_rule_learning(pos='data/molecules-medium.pos', neg='
                 # Negative training set
                 neg_ids[i * neg_fold_size:(i + 1) * neg_fold_size],  # Negative test set
             ]
-            # Printing fold number:
-            print('fold {}'.format(i + 1))
+            # # printing fold number:
+            # print('fold {}'.format(i + 1))
             res_by_fold[i] = sequential_covering(minsup, graph_database, subsets, k)
         return res_by_fold
 
@@ -632,8 +635,8 @@ def sequential_covering(minsup, database, subsets, k):
             correctly_predicted += [(i, 'neg') for i in gid_subsets[3]]
             wrongly_predicted += [(i, 'neg') for i in gid_subsets[1]]
 
-        # TODO: for now the print for the pattern is here; maybe be cleaner
-        print(pattern, conf, sup)
+        # TODO: for now the # print for the pattern is here; maybe be cleaner
+        # # print(pattern, conf, sup)
 
         # Remove from subsets the transactions in gid_subsets (both positive and negative)
         for index_type_subset in range(4):  # 0 = pos_train, 1 = pos_test, 2 = neg_train, 3 = neg_test
@@ -653,11 +656,11 @@ def sequential_covering(minsup, database, subsets, k):
     pred = correctly_predicted + wrongly_predicted
     pred.sort(key=lambda x: x[0])
     pred_label = [1 if i[1] == 'pos' else -1 for i in pred]
-    print(pred_label)
+    # # print(pred_label)
 
     accuracy = len(correctly_predicted) / (len(correctly_predicted) + len(wrongly_predicted))
-    print("accuracy: {}".format(accuracy))
-    print()  # Blank line to indicate end of fold.
+    # # print("accuracy: {}".format(accuracy))
+    # # print()  # Blank line to indicate end of fold.
     return accuracy
 
 
@@ -684,10 +687,10 @@ def another_classifier(pos='data/molecules-small.pos', neg='data/molecules-small
         nfolds = 8
 
     if not os.path.exists(database_file_name_pos):
-        print('{} does not exist.'.format(database_file_name_pos))
+        # print('{} does not exist.'.format(database_file_name_pos))
         sys.exit()
     if not os.path.exists(database_file_name_neg):
-        print('{} does not exist.'.format(database_file_name_neg))
+        # print('{} does not exist.'.format(database_file_name_neg))
         sys.exit()
 
     graph_database = GraphDatabase()  # Graph database object
@@ -704,8 +707,8 @@ def another_classifier(pos='data/molecules-small.pos', neg='data/molecules-small
             neg_ids,  # Negative training set
             neg_ids  # Negative test set
         ]
-        # Printing fold number:
-        print('fold {}'.format(1))
+        # # printing fold number:
+        # # print('fold {}'.format(1))
         another_train(graph_database, subsets)
 
     # Otherwise: performs k-fold cross-validation:
@@ -726,8 +729,8 @@ def another_classifier(pos='data/molecules-small.pos', neg='data/molecules-small
                 # Negative training set
                 neg_ids[i * neg_fold_size:(i + 1) * neg_fold_size],  # Negative test set
             ]
-            # Printing fold number:
-            print('fold {}'.format(i + 1))
+            # # printing fold number:
+            # # print('fold {}'.format(i + 1))
             res_by_fold[i] = another_train(graph_database, subsets, k1=k, minsup1=minsup, clf=clf)
         return res_by_fold
 
@@ -739,6 +742,7 @@ def another_train(database, subsets, k1=-1, minsup1=-1, clf='rf'):
         database_size = len(subsets[0]) + len(subsets[2])
 
         minsup = (database_size // 2) + 1
+        print(minsup)
         k = (database_size // 100) + 1
     else:
         minsup = minsup1
@@ -748,12 +752,12 @@ def another_train(database, subsets, k1=-1, minsup1=-1, clf='rf'):
 
     gSpan(task).run()  # Running gSpan
 
-    # print('value \n of \n top-k')
-    # print(len(task.bestk))
+    # # print('value \n of \n top-k')
+    # # print(len(task.bestk))
     # for i in task.bestk:
-    #     print(len(i[2]))
-    #     print(i[0], i[1])
-    # print('value\n done \n')
+    #     # print(len(i[2]))
+    #     # print(i[0], i[1])
+    # # print('value\n done \n')
 
     # Creating feature matrices for training and testing:
     features = task.get_feature_matrices()
@@ -766,28 +770,31 @@ def another_train(database, subsets, k1=-1, minsup1=-1, clf='rf'):
 
     # classifier = tree.DecisionTreeClassifier(random_state=1)  # Creating model object
     if clf == 'rf':
-        classifier = RandomForestClassifier(min_samples_split=5, ccp_alpha=0.07, max_depth=5, n_estimators=100)
+        classifier = RandomForestClassifier(class_weight='balanced', max_depth=9)
+    elif clf == 'svm':
+        classifier = SVC(kernel='linear', C=0.9, class_weight='balanced')
     else:
-        classifier = SVC(kernel='linear', C=0.9)
+        classifier = KNeighborsClassifier(n_neighbors=10)
     classifier.fit(train_fm, train_labels)  # Training model
 
     predicted = classifier.predict(test_fm)  # Using model to predict labels of testing data
 
     accuracy = metrics.accuracy_score(test_labels, predicted)  # Computing accuracy:
 
-    # Printing frequent patterns along with their positive support:
+    # # printing frequent patterns along with their positive support:
     # for pattern, gid_subsets in task.get_pattern():
     #     pos_support = len(gid_subsets[0])
-    #     print('{} {}'.format(pattern, pos_support))
+    #     # print('{} {}'.format(pattern, pos_support))
 
-    # New print
+    # New # print
     for confidence, total_support, list_code_gid in task.get_bestk():
         for pattern, gid_subsets in list_code_gid:
-            print('{} {} {}'.format(pattern, confidence, total_support))
-    # printing classification results:
-    print(predicted.tolist())
-    print('accuracy: {}'.format(accuracy))
-    print()  # Blank line to indicate end of fold.
+            pass
+            # print('{} {} {}'.format(pattern, confidence, total_support))
+    # # printing classification results:
+    # print(predicted.tolist())
+    # print('accuracy: {}'.format(accuracy))
+    # print()  # Blank line to indicate end of fold.
     return accuracy
 
 
